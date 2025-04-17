@@ -1,0 +1,14 @@
+[project]
+name = "schwordcloud"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Maxwel de Souza Freitas", email = "maxwel@maxwelfreitas.com.br" }
+]
+requires-python = ">=3.13"
+dependencies = []
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
