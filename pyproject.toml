@@ -7,7 +7,12 @@ authors = [
     { name = "Maxwel de Souza Freitas", email = "maxwel@maxwelfreitas.com.br" }
 ]
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "flatdict>=4.0.1",
+    "openpyxl>=3.1.5",
+    "pandas>=2.2.3",
+    "requests>=2.32.3",
+]
 
 [build-system]
 requires = ["hatchling"]
