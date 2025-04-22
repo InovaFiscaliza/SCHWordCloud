@@ -73,14 +73,16 @@ class GoogleSearch(BaseSearch):
         except Exception:
             content = None
 
+        fields = []
         text = ""
         if status_code == 200:
             if items := content.get("items"):
-                text = self._extract_text(items)
+                fields, text = self._extract_text(items)
 
         search_results = {
             "query": query,
             "status_code": response.status_code,
+            "fields": fields,
             "text": text,
             "raw_contents": content,
         }

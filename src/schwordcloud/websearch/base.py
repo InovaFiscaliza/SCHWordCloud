@@ -16,8 +16,8 @@ TOKEN_PATTERN = re.compile(r"\b\w\w+\b")
 WORD_CLOUD_VERSION = 1
 # mode for the word cloud generator
 WORD_CLOUD_MODE = "API"
-# time format for wordcloud annotation
-ANNOTATION_TS_FORMAT = "%d/%m/%Y %H:%M:%S"
+# time format for wordcloud
+WORDCLOUD_TS_FORMAT = "%d/%m/%Y %H:%M:%S"
 
 
 class BaseSearch:
@@ -61,9 +61,20 @@ class BaseSearch:
             for word in self._fields_of_interest
             if word in key
         ]
-        text = " ".join([flat_content[key] for key in target_keys])
 
-        return text
+        text = []
+        fields = []
+        for key in target_keys:
+            if _text := flat_content.get(key, None):
+                text.append(_text)
+                fields.append(key.split("__")[-1])
+        
+        # remove duplicates
+        fields = list(set(fields))
+
+        text = " ".join(text)
+
+        return fields, text
 
     def _extract_word_counts(self, text=None, n_words=N_WORDS):
         """
@@ -111,48 +122,45 @@ class BaseSearch:
         if response["status_code"] == 200:
             text = response["text"]
             word_counts = self._extract_word_counts(text)
-            if word_counts == "":
-                situacao = -1
-            else:
-                situacao = 1
         else:
             word_counts = ""
-            situacao = -1
 
-        wordcloud_info = {
+        wordcloud = {
             "metaData": {
                 "Version": WORD_CLOUD_VERSION,
                 "Source": self._source,
                 "Mode": WORD_CLOUD_MODE,
-                "Fields": self._fields_of_interest,
+                "Fields": response["fields"],
                 "n_words": N_WORDS,
             },
             "searchedWord": query,
             "cloudOfWords": word_counts,
         }
-        wordcloud_info = json.dumps(wordcloud_info, ensure_ascii=False)
 
-        wordcloud_id = str(uuid.uuid4())
-        wordcloud_datahora = datetime.now().strftime(ANNOTATION_TS_FORMAT)
-        wordcloud_computername = os.environ["COMPUTERNAME"]
-        wordcloud_username = os.environ["USERNAME"]
-        wordcloud_homologacao = f"{query[:5]}-{query[5:7]}-{query[7:]}"
+        # wordcloud_info = json.dumps(wordcloud_info, ensure_ascii=False)
 
-        wordcloud = {
-            "ID": wordcloud_id,
-            "DataHora": wordcloud_datahora,
-            "Computador": wordcloud_computername,
-            "Usuário": wordcloud_username,
-            "Homologação": wordcloud_homologacao,
-            "Atributo": "WordCloud",
-            "Valor": wordcloud_info,
-            "Situação": situacao,
-        }
+        # wordcloud_id = str(uuid.uuid4())
+        # wordcloud_datahora = datetime.now().strftime(ANNOTATION_TS_FORMAT)
+        # wordcloud_computername = os.environ["COMPUTERNAME"]
+        # wordcloud_username = os.environ["USERNAME"]
+        # wordcloud_homologacao = f"{query[:5]}-{query[5:7]}-{query[7:]}"
+
+        # wordcloud = {
+        #     "ID": wordcloud_id,
+        #     "DataHora": wordcloud_datahora,
+        #     "Computador": wordcloud_computername,
+        #     "Usuário": wordcloud_username,
+        #     "Homologação": wordcloud_homologacao,
+        #     "Atributo": "WordCloud",
+        #     "Valor": wordcloud_info,
+        #     "Situação": situacao,
+        # }
 
         result = {
-            "wordcloud": wordcloud,
             "query": query,
             "status_code": response["status_code"],
+            "wordcloud": wordcloud,
+            "date_time": datetime.now().strftime(WORDCLOUD_TS_FORMAT),
             "raw_contents": response["raw_contents"],
         }
 
