@@ -74,11 +74,28 @@ class DataManager:
         ):
             raise ValueError("One or more cloud dataset folders are not directories.")
 
+        # check if the local null annotation file exists
+        if annotation_config := config.get("annotation"):
+            if null_annotation_file := annotation_config.get("null_annotation_file"):
+                null_annotation_file = Path(null_annotation_file).expanduser()
+            else:
+                if not null_annotation_file.exists():
+                    raise FileNotFoundError(
+                        f"Null annotation file not found: {null_annotation_file}"
+                    )
+                if not null_annotation_file.is_file():
+                    raise NotADirectoryError(
+                        f"Null annotation file is not a file: {null_annotation_file}"
+                    )
+        else:
+            null_annotation_file = None
+        self.null_annotation_file = null_annotation_file
+
         self.sch = fetch_sch_database(self.sch_data_home)
 
         cloud_annotation_file = self.cloud_annotation_get_folder / "Annotation.xlsx"
         self.annotation = fetch_annotation(
-            cloud_annotation_file, self.annotation_data_home
+            cloud_annotation_file, self.null_annotation_file, self.annotation_data_home
         )
 
     def get_items_to_search(self, category: int = 2, grace_period: int = 180) -> list:
