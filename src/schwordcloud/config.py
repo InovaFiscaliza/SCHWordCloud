@@ -20,14 +20,14 @@ def _get_data_home(data_home=None) -> str:
     ----------
     data_home : str or path-like, default=None
         The path to data directory. If `None`, the default path
-        is `%LOCALAPPDATA%/Local/sch_tools/datasets` or `~/sch_tools/datasets`.
+        is `%LOCALAPPDATA%/Local/schwordcloud/datasets` or `~/schwordcloud/datasets`.
 
     Returns
     -------
     data_home: Dictionary of strings containing the paths to the data directories.
 
     """
-    default_data_home = join(environ.get("LOCALAPPDATA", "~"), "sch_tools", "datasets")
+    default_data_home = join(environ.get("LOCALAPPDATA", "~"), "schwordcloud", "datasets")
     if data_home is None:
         data_home = environ.get("SCH_DATAHOME", default_data_home)
     data_home = Path(expanduser(data_home))
