@@ -30,7 +30,11 @@ def _get_data_home(data_home=None) -> str:
     default_data_home = join(environ.get("LOCALAPPDATA", "~"), "schwordcloud", "datasets")
     if data_home is None:
         data_home = environ.get("SCH_DATAHOME", default_data_home)
-    data_home = Path(expanduser(data_home))
+    data_home = Path(data_home).expanduser()
+    if not exists(data_home):
+        raise FileNotFoundError(f"Data home not found: {data_home}")
+    if not data_home.is_dir():      
+        raise NotADirectoryError(f"Data home is not a directory: {data_home}")
 
     sch_data_home = data_home / "sch"
     search_results_data_home = data_home / "search_results"

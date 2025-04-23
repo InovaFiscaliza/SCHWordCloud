@@ -1,3 +1,5 @@
+datasets = "D:\\Users\\maxwelfreitas\\OneDrive - ANATEL\\Rascunho\\schwordcloud\\datasets"
+
 [cloud]
 cloud_annotation_get_folder = "D:\\Users\\maxwelfreitas\\ANATEL\\InovaFiscaliza - DataHub - GET\\SCH"
 cloud_annotation_post_folder = "D:\\Users\\maxwelfreitas\\ANATEL\\InovaFiscaliza - DataHub - POST\\SCH"
@@ -6,4 +8,4 @@ cloud_annotation_post_folder = "D:\\Users\\maxwelfreitas\\ANATEL\\InovaFiscaliza
 creds_file = "D:\\Users\\maxwelfreitas\\OneDrive - ANATEL\\creds.ini"
 
 [annotation]
-null_annotation_file = "C:\\Users\\maxwelfreitas\\AppData\\Local\\schwordcloud\\datasets\\annotation\\NullAnnotation.xlsx"
+null_annotation_file = "D:\\Users\\maxwelfreitas\\OneDrive - ANATEL\\Rascunho\\schwordcloud\\datasets\\annotation\\NullAnnotation.xlsx"
