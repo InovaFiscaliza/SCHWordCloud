@@ -9,6 +9,8 @@ import pandas as pd
 from .annotation import fetch_annotation
 from .sch import fetch_sch_database
 
+import random
+
 pd.options.mode.copy_on_write = True
 
 ANNOTATION_TS_FORMAT = "%d/%m/%Y %H:%M:%S"
@@ -147,9 +149,13 @@ class DataManager:
                 df_to_search["Dias da Homologação"] > grace_period
             ]
 
-        return df_to_search["Número de Homologação"].to_list()
+        items_to_search = df_to_search["Número de Homologação"].to_list()
+        if shuffle:
+            random.shuffle(items_to_search)
+        
+        return items_to_search
 
-    def format_new_annotation(self, search_result: dict) -> dict:
+    def format_annotation(self, search_result: dict) -> dict:
         """
         Format the search results into a dictionary.
 
