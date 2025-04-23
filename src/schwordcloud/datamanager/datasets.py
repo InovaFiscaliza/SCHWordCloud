@@ -1,4 +1,8 @@
+from datetime import datetime
+import json
+from os import environ
 from pathlib import Path
+import uuid
 
 import pandas as pd
 
@@ -6,6 +10,8 @@ from .annotation import fetch_annotation
 from .sch import fetch_sch_database
 
 pd.options.mode.copy_on_write = True
+
+ANNOTATION_TS_FORMAT = "%d/%m/%Y %H:%M:%S"
 
 
 class DataManager:
@@ -118,7 +124,7 @@ class DataManager:
             df_sch = df_sch[df_sch["Categoria do Produto"] == category]
 
         columns_to_keep = ["Número de Homologação", "Data da Homologação"]
-        df_sch = df_sch[df_sch["Categoria do Produto"] == category][columns_to_keep]
+        df_sch = df_sch[columns_to_keep]
         df_sch = df_sch.drop_duplicates(subset="Número de Homologação")
 
         df_annotation = self.annotation
@@ -141,4 +147,55 @@ class DataManager:
                 df_to_search["Dias da Homologação"] > grace_period
             ]
 
-        return df_to_search['Número de Homologação'].to_list()
+        return df_to_search["Número de Homologação"].to_list()
+
+    def format_new_annotation(self, search_result: dict) -> dict:
+        """
+        Format the search results into a dictionary.
+
+        Parameters
+        ----------
+        search_result : dict
+            The search results to format.
+
+        Returns
+        -------
+        formatted_results : dict
+            The formatted search results.
+        """
+        wordcloud = search_result["wordcloud"]
+        query = wordcloud["searchedWord"]
+        datahora = datetime.now().strftime(ANNOTATION_TS_FORMAT)
+        computername = environ["COMPUTERNAME"]
+        username = environ["USERNAME"]
+        homologacao = f"{query[:5]}-{query[5:7]}-{query[7:]}"
+        _id = self.uuid_history.get(homologacao, str(uuid.uuid4()))
+        atributo = "WordCloud"
+        if wordcloud["cloudOfWords"] == "":
+            situacao = -1
+        else:
+            situacao = 1
+        wordcloud = json.dumps(wordcloud)
+
+        return {
+            "ID": _id,
+            "DataHora": datahora,
+            "Computador": computername,
+            "Usuário": username,
+            "Homologação": homologacao,
+            "Atributo": atributo,
+            "Valor": wordcloud,
+            "Situação": situacao,
+        }
+    
+    def append_new_annotation(self, search_result: dict) -> None:
+        """
+        Append the new annotation to the list.
+
+        Parameters
+        ----------
+        search_result : dict
+            The search results to append.
+        """
+        formatted_annotation = self.format_new_annotation(search_result)
+        self.new_annotation.append(formatted_annotation)
