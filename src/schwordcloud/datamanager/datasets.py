@@ -113,6 +113,10 @@ class DataManager:
 
         """
         df_sch = self.sch
+        # Filter categories 1, 2, and 3
+        if category in [1, 2, 3]:
+            df_sch = df_sch[df_sch["Categoria do Produto"] == category]
+
         columns_to_keep = ["Número de Homologação", "Data da Homologação"]
         df_sch = df_sch[df_sch["Categoria do Produto"] == category][columns_to_keep]
         df_sch = df_sch.drop_duplicates(subset="Número de Homologação")
@@ -130,6 +134,11 @@ class DataManager:
         df_to_search["Dias da Homologação"] = df_to_search["Data da Homologação"].apply(
             lambda data_homologacao: (pd.Timestamp.now() - data_homologacao).days
         )
-        df_to_search = df_to_search[df_to_search["Dias da Homologação"] > grace_period]
+
+        if grace_period > 0:
+            # Filter the homologations that are older than the grace period
+            df_to_search = df_to_search[
+                df_to_search["Dias da Homologação"] > grace_period
+            ]
 
         return df_to_search['Número de Homologação'].to_list()
