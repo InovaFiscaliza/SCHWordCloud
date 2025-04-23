@@ -84,13 +84,13 @@ def fetch_annotation(
 
     return frame
 
-def save_annotation(wordcloud: list, annotation_folder: str | Path) -> Path:
+def save_cloud_annotation(annotation: pd.DataFrame, cloud_annotation_post_folder: str | Path) -> Path:
     """Save the annotation file to the specified path.
 
     Parameters
     ----------
-    wordcloud : list of dict
-        The wordcloud data to be saved.
+    annotation : DataFrame
+        The annotation data to be saved.
 
     annotation_folder : str or Path
         The path of the folder where the annotation file will be stored.
@@ -100,7 +100,7 @@ def save_annotation(wordcloud: list, annotation_folder: str | Path) -> Path:
     local_annotation_file : Path
         The path of the saved annotation file.
     """
-    annotation_folder = Path(annotation_folder).expanduser()
+    annotation_folder = Path(cloud_annotation_post_folder).expanduser()
     if not annotation_folder.exists():
         raise FileNotFoundError(
             f"Annotation folder not found: {annotation_folder}"
@@ -111,9 +111,37 @@ def save_annotation(wordcloud: list, annotation_folder: str | Path) -> Path:
         )
     
 
-    frame = pd.DataFrame(wordcloud)
+    annotation = annotation[annotation["Situação"]==1]
     annotation_ts = datetime.now().strftime(ANOTATION_FILE_TS_FORMAT)
     annotation_file = f'Annotation_{annotation_ts}.xlsx'
-    frame.to_excel(annotation_file, index=False)
+    annotation_file = annotation_folder / annotation_file
+    annotation.to_excel(annotation_file, index=False)
 
     return 
+
+def update_null_annotation(annotation: pd.DataFrame, null_annotation_file: str | Path) -> None:
+    """Update the null annotation file with the new null annotation data.
+
+    Parameters
+    ----------
+    annotation : DataFrame
+        The annotation data to be saved.
+
+    null_annotation_file : str or Path
+        The path of the null annotation file.
+
+    ignore_not_found : bool, default=False
+            If True, the function will not raise an error if the null annotation file is not found.
+            
+    """
+
+    null_annotation_file = Path(null_annotation_file).expanduser()
+    if not null_annotation_file.exists():
+        raise FileNotFoundError(f"Null annotation file not found: {null_annotation_file}")
+    if not null_annotation_file.is_file():  
+        raise NotADirectoryError(f"Null annotation file is not a file: {null_annotation_file}")
+
+    null_annotation_from_file = pd.read_excel(null_annotation_file)
+    null_annotation = annotation[annotation["Situação"] == -1]
+    null_annotation = pd.concat([null_annotation_from_file, null_annotation], ignore_index=True)
+    null_annotation.to_excel(null_annotation_file, index=False)
