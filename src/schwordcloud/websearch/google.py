@@ -69,9 +69,9 @@ class GoogleSearch(BaseSearch):
             response = requests.get(self._endpoint, params=params)
             response.raise_for_status()
             content = response.json()
-            status_code = response.status_code
         except Exception:
             content = None
+        status_code = response.status_code
 
         fields = []
         text = ""
