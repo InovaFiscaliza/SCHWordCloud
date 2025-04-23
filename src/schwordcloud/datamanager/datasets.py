@@ -6,7 +6,7 @@ import uuid
 
 import pandas as pd
 
-from .annotation import fetch_annotation
+from .annotation import fetch_annotation, save_cloud_annotation, update_null_annotation
 from .sch import fetch_sch_database
 
 import random
@@ -113,9 +113,10 @@ class DataManager:
             ]
         }
 
+        self.search_results = []
         self.new_annotation = []
 
-    def get_items_to_search(self, category: int = 2, grace_period: int = 180) -> list:
+    def get_items_to_search(self, category: int = 2, grace_period: int = 180, shuffle: bool = True) -> list:
         """
         Get the items to search from the SCH database.
 
@@ -194,7 +195,7 @@ class DataManager:
             "Situação": situacao,
         }
     
-    def append_new_annotation(self, search_result: dict) -> None:
+    def add_result(self, search_result: dict) -> None:
         """
         Append the new annotation to the list.
 
@@ -203,5 +204,29 @@ class DataManager:
         search_result : dict
             The search results to append.
         """
-        formatted_annotation = self.format_new_annotation(search_result)
+
+        if search_result['status_code'] in [429, 503]:
+            # Handle rate limiting or service unavailable
+            print("Rate limit exceeded or service unavailable.")
+            return False
+        
+        self.search_results.append(search_result)
+        formatted_annotation = self.format_annotation(search_result)
         self.new_annotation.append(formatted_annotation)
+        return True
+    
+    def save_annotation(self) -> None:
+        """
+        Save the new annotation to the local file.
+
+        """
+        if not self.new_annotation:
+            print("No new annotations to save.")
+            return
+
+        annotation = pd.DataFrame(self.new_annotation)
+        
+        # Save the new annotation to the cloud folder
+        save_cloud_annotation(annotation, self.cloud_annotation_post_folder)
+        # Save the new annotation to the local folder
+        update_null_annotation(annotation, self.null_annotation_file)
