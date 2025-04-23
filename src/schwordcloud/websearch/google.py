@@ -79,7 +79,7 @@ class GoogleSearch(BaseSearch):
             if items := content.get("items"):
                 fields, text = self._extract_text(items)
 
-        search_results = {
+        search_result = {
             "query": query,
             "status_code": response.status_code,
             "fields": fields,
@@ -87,4 +87,4 @@ class GoogleSearch(BaseSearch):
             "raw_contents": content,
         }
 
-        return search_results
+        return search_result

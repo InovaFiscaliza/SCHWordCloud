@@ -1,17 +1,16 @@
 from datetime import datetime
-from pathlib import Path
+from os.path import exists, join
 from shutil import copyfile
 
 import pandas as pd
 
 # time format for annotation file
-ANOTATION_FILE_TS_FORMAT = '%Y.%m.%d_T%H.%M.%S'
+ANOTATION_FILE_TS_FORMAT = "%Y.%m.%d_T%H.%M.%S"
+
 
 def fetch_annotation(
-    cloud_annotation_file: str | Path, 
-    null_annotation_file: str | Path = None, 
-    local_annotation_folder: str | Path = None
-) -> Path:
+    cloud_annotation_folder: str, local_annotation_folder: str
+) -> pd.DataFrame:
     """Fetch the annotation file from the specified path.
 
     Parameters
@@ -44,47 +43,38 @@ def fetch_annotation(
     8  Scarab Post Order
     =  =================
     """
-    cloud_annotation_file = Path(cloud_annotation_file).expanduser()
-    if not cloud_annotation_file.exists():
-        raise FileNotFoundError(f"Annotation file not found: {cloud_annotation_file}")
+    cloud_annotation_file = join(cloud_annotation_folder, "Annotation.xlsx")
+    cloud_null_annotation_file = join(cloud_annotation_folder, "NullAnnotation.xlsx")
     
-    if null_annotation_file is not None:
-        if not Path(null_annotation_file).exists():
-            raise FileNotFoundError(f"Null annotation file not found: {null_annotation_file}")
-        if not Path(null_annotation_file).is_file():  
-            raise NotADirectoryError(f"Null annotation file is not a file: {null_annotation_file}")
-   
+    local_annotation_file = join(local_annotation_folder, "Annotation.xlsx")
+    local_null_annotation_file = join(local_annotation_folder, "NullAnnotation.xlsx")
 
-    if local_annotation_folder is not None:
-        local_annotation_folder = Path(local_annotation_folder).expanduser()
-        if not local_annotation_folder.exists():
-            raise FileNotFoundError(
-                f"Local annotation folder not found: {local_annotation_folder}"
-            )
-        if not local_annotation_folder.is_dir():
-            raise NotADirectoryError(
-                f"Local annotation folder is not a directory: {local_annotation_folder}"
-            )
+    if not exists(cloud_annotation_file): 
+        raise FileNotFoundError(f"Annotation file not found: {cloud_null_annotation_file}")
 
-        local_annotation_file = local_annotation_folder / cloud_annotation_file.name
-        copyfile(cloud_annotation_file, local_annotation_file)
-        if not local_annotation_file.exists():
-            raise OSError(f"Error fetching annotation file: {cloud_annotation_file}")
-        else:
-            frame = pd.read_excel(local_annotation_file)
+    copyfile(cloud_annotation_file, local_annotation_file)
+    if not exists(local_annotation_file):
+        raise OSError(f"Error fetching annotation file: {cloud_annotation_file}")
     else:
-        frame = pd.read_excel(cloud_annotation_file)
-    
-    if null_annotation_file is not None:
-        null_frame = pd.read_excel(null_annotation_file)
-        null_frame["Scarab Post Order"] = -1
-        frame = pd.concat([frame, null_frame], ignore_index=True)
+            frame = pd.read_excel(local_annotation_file)
+
+    if exists(cloud_null_annotation_file):
+        copyfile(cloud_null_annotation_file, local_null_annotation_file)
+        if not exists(local_null_annotation_file):
+            raise OSError(f"Error fetching null annotation file: {cloud_null_annotation_file}")
+        
+    if exists(local_null_annotation_file):
+        null_annotation = pd.read_excel(local_null_annotation_file)
+        frame = pd.concat([frame, null_annotation], ignore_index=True) 
 
     frame = frame[frame["Atributo"] == "WordCloud"].reset_index(drop=True)
 
     return frame
 
-def save_cloud_annotation(annotation: pd.DataFrame, cloud_annotation_post_folder: str | Path) -> Path:
+
+def save_cloud_annotation(
+    annotation: pd.DataFrame, cloud_annotation_post_folder: str
+):
     """Save the annotation file to the specified path.
 
     Parameters
@@ -100,26 +90,26 @@ def save_cloud_annotation(annotation: pd.DataFrame, cloud_annotation_post_folder
     local_annotation_file : Path
         The path of the saved annotation file.
     """
-    annotation_folder = Path(cloud_annotation_post_folder).expanduser()
-    if not annotation_folder.exists():
-        raise FileNotFoundError(
-            f"Annotation folder not found: {annotation_folder}"
-        )
-    if not annotation_folder.is_dir():
-        raise NotADirectoryError(
-            f"Annotation folder is not a directory: {annotation_folder}"
-        )
-    
+    # annotation_folder = Path(cloud_annotation_post_folder).expanduser()
+    # if not annotation_folder.exists():
+    #     raise FileNotFoundError(f"Annotation folder not found: {annotation_folder}")
+    # if not annotation_folder.is_dir():
+    #     raise NotADirectoryError(
+    #         f"Annotation folder is not a directory: {annotation_folder}"
+    #     )
 
-    annotation = annotation[annotation["Situação"]==1]
-    annotation_ts = datetime.now().strftime(ANOTATION_FILE_TS_FORMAT)
-    annotation_file = f'Annotation_{annotation_ts}.xlsx'
-    annotation_file = annotation_folder / annotation_file
-    annotation.to_excel(annotation_file, index=False)
+    # annotation = annotation[annotation["Situação"] == 1]
+    # annotation_ts = datetime.now().strftime(ANOTATION_FILE_TS_FORMAT)
+    # annotation_file = f"Annotation_{annotation_ts}.xlsx"
+    # annotation_file = annotation_folder / annotation_file
+    # annotation.to_excel(annotation_file, index=False)
 
-    return 
+    return
 
-def update_null_annotation(annotation: pd.DataFrame, null_annotation_file: str | Path) -> None:
+
+def update_null_annotation(
+    annotation: pd.DataFrame, null_annotation_file: str
+) -> None:
     """Update the null annotation file with the new null annotation data.
 
     Parameters
@@ -132,16 +122,23 @@ def update_null_annotation(annotation: pd.DataFrame, null_annotation_file: str |
 
     ignore_not_found : bool, default=False
             If True, the function will not raise an error if the null annotation file is not found.
-            
+
     """
 
-    null_annotation_file = Path(null_annotation_file).expanduser()
-    if not null_annotation_file.exists():
-        raise FileNotFoundError(f"Null annotation file not found: {null_annotation_file}")
-    if not null_annotation_file.is_file():  
-        raise NotADirectoryError(f"Null annotation file is not a file: {null_annotation_file}")
+    # null_annotation_file = Path(null_annotation_file).expanduser()
+    # if not null_annotation_file.exists():
+    #     raise FileNotFoundError(
+    #         f"Null annotation file not found: {null_annotation_file}"
+    #     )
+    # if not null_annotation_file.is_file():
+    #     raise NotADirectoryError(
+    #         f"Null annotation file is not a file: {null_annotation_file}"
+    #     )
 
-    null_annotation_from_file = pd.read_excel(null_annotation_file)
-    null_annotation = annotation[annotation["Situação"] == -1]
-    null_annotation = pd.concat([null_annotation_from_file, null_annotation], ignore_index=True)
-    null_annotation.to_excel(null_annotation_file, index=False)
+    # null_annotation_from_file = pd.read_excel(null_annotation_file)
+    # null_annotation = annotation[annotation["Situação"] == -1]
+    # null_annotation = pd.concat(
+    #     [null_annotation_from_file, null_annotation], ignore_index=True
+    # )
+    # null_annotation.to_excel(null_annotation_file, index=False)
+    pass
