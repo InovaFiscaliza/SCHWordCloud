@@ -7,6 +7,7 @@ from collections import Counter
 from datetime import datetime
 
 import flatdict
+from nltk.corpus import stopwords
 
 # number of words to extract for the word cloud
 N_WORDS = 25
@@ -101,6 +102,9 @@ class BaseSearch:
         tokens = [
             token for token in TOKEN_PATTERN.findall(text.lower()) if token.isalpha()
         ]
+        # Remove stop words
+        stop_words = stopwords.words('english') + stopwords.words('portuguese')
+        tokens = [token for token in tokens if token not in stop_words]
 
         # Split the text into words and count occurrences
         words_counter = Counter(tokens)
