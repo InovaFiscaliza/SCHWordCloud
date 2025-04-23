@@ -98,6 +98,15 @@ class DataManager:
             cloud_annotation_file, self.null_annotation_file, self.annotation_data_home
         )
 
+        self.uuid_history = {
+            key: value
+            for key, value in self.annotation[["Homologação", "ID"]].to_dict("split")[
+                "data"
+            ]
+        }
+
+        self.new_annotation = []
+
     def get_items_to_search(self, category: int = 2, grace_period: int = 180) -> list:
         """
         Get the items to search from the SCH database.
