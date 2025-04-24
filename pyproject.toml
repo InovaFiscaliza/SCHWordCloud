@@ -9,6 +9,7 @@ authors = [
 requires-python = ">=3.13"
 dependencies = [
     "flatdict>=4.0.1",
+    "nltk>=3.9.1",
     "openpyxl>=3.1.5",
     "pandas>=2.2.3",
     "requests>=2.32.3",
