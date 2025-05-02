@@ -1,15 +1,18 @@
-from datetime import datetime
 import json
-from os import environ
-from pathlib import Path
+import random
 import uuid
+from datetime import datetime
+from os import environ
 
 import pandas as pd
 
-from .annotation import fetch_annotation, save_cloud_annotation, update_null_annotation
+from .annotation import (
+    fetch_annotation,
+    get_uuid_history,
+    save_cloud_annotation,
+    update_null_annotation,
+)
 from .sch import fetch_sch_database
-
-import random
 
 pd.options.mode.copy_on_write = True
 
@@ -41,6 +44,10 @@ class DataManager:
 
         self.sch = fetch_sch_database(self.sch_data_home)
         self.annotation = fetch_annotation(self.cloud_annotation_get_folder, self.annotation_data_home)
+        self.uuid_history = get_uuid_history(self.annotation)
+
+        self._cached_search_results = []
+        self._cached_annotation = []
 
 
     def get_items_to_search(self, category: int = 2, grace_period: int = 180, shuffle: bool = True) -> list:
@@ -50,7 +57,7 @@ class DataManager:
         """
         df_sch = self.sch
         # Filter categories 1, 2, and 3
-        if category in [1, 2, 3]:
+        if category in {1, 2, 3}:
             df_sch = df_sch[df_sch["Categoria do Produto"] == category]
 
         columns_to_keep = ["Número de Homologação", "Data da Homologação"]
@@ -80,7 +87,7 @@ class DataManager:
         items_to_search = df_to_search["Número de Homologação"].to_list()
         if shuffle:
             random.shuffle(items_to_search)
-        
+
         return items_to_search
 
     def format_annotation(self, search_result: dict) -> dict:
@@ -105,10 +112,7 @@ class DataManager:
         homologacao = f"{query[:5]}-{query[5:7]}-{query[7:]}"
         _id = self.uuid_history.get(homologacao, str(uuid.uuid4()))
         atributo = "WordCloud"
-        if wordcloud["cloudOfWords"] == "":
-            situacao = -1
-        else:
-            situacao = 1
+        situacao = -1 if wordcloud["cloudOfWords"] == "" else 1
         wordcloud = json.dumps(wordcloud)
 
         return {
@@ -137,9 +141,9 @@ class DataManager:
             print("Rate limit exceeded or service unavailable.")
             return False
         
-        self.search_results.append(search_result)
+        self._cached_search_results.append(search_result)
         formatted_annotation = self.format_annotation(search_result)
-        self.new_annotation.append(formatted_annotation)
+        self._cached_annotation.append(formatted_annotation)
         return True
     
     def save_annotation(self) -> None:
@@ -147,13 +151,19 @@ class DataManager:
         Save the new annotation to the local file.
 
         """
-        if not self.new_annotation:
+        if not self._cached_annotation:
             print("No new annotations to save.")
             return
 
-        annotation = pd.DataFrame(self.new_annotation)
+        annotation = pd.DataFrame(self._cached_annotation)
         
-        # Save the new annotation to the cloud folder
-        save_cloud_annotation(annotation, self.cloud_annotation_post_folder)
-        # Save the new annotation to the local folder
-        update_null_annotation(annotation, self.null_annotation_file)
+        try:
+            # Save the new annotation to the cloud folder
+            save_cloud_annotation(annotation, self.cloud_annotation_post_folder)
+            # Save the new annotation to the local folder
+            update_null_annotation(annotation, self.annotation_data_home)
+            # Clear the cached annotation
+            self._cached_annotation = []
+            print("Annotation saved successfully.")
+        except Exception as e:
+            print(f"Error saving annotation: {e}")
