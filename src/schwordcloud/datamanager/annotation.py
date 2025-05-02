@@ -112,8 +112,8 @@ def save_cloud_annotation(annotation: pd.DataFrame, cloud_annotation_post_folder
         try:
             annotation.to_excel(annotation_file, index=False)
             print(f"Annotation file saved successfully: {annotation_file}")
-        except Exception:
-            raise OSError(f"Error saving annotation file: {annotation_file}")
+        except Exception as e:
+            raise OSError(f"Error saving annotation file: {annotation_file}") from e
 
 
 def update_null_annotation(annotation: pd.DataFrame, annotation_data_home: str) -> None:
@@ -132,27 +132,29 @@ def update_null_annotation(annotation: pd.DataFrame, annotation_data_home: str) 
 
     """
 
-    null_annotation = annotation[annotation["Situação"] == -1]
+    df_null_annotation = annotation[annotation["Situação"] == -1]
 
-    if null_annotation.empty:
+    if df_null_annotation.empty:
         print("Nothing to update in null annotation file.")
-    else:
-        null_annotation_file = join(annotation_data_home, "AnnotationNull.xlsx")
-        if exists(null_annotation_file):
-            null_annotation_from_file = pd.read_excel(null_annotation_file)
-            null_annotation = pd.concat(
-                [null_annotation_from_file, null_annotation], ignore_index=True
-            )
-            null_annotation = null_annotation.drop_duplicates(subset=["ID"])
-        try:
-            null_annotation.to_excel(null_annotation_file, index=False)
-            print(f"Null annotation file updated successfully: {null_annotation_file}.")
-            return null_annotation_file
-        except Exception:
-            raise OSError(
-                f"Error updating null annotation file: {null_annotation_file}"
-            )
+        return
 
+    null_annotation_file = join(annotation_data_home, "AnnotationNull.xlsx")
+    if exists(null_annotation_file):
+        df_null_annotation_history = pd.read_excel(null_annotation_file)
+        df_null_annotation = pd.concat(
+            [df_null_annotation_history, df_null_annotation], ignore_index=True
+        )
+        df_null_annotation = df_null_annotation.drop_duplicates(subset=["ID"])
+
+    try:
+        df_null_annotation.to_excel(null_annotation_file, index=False)
+        print(f"Null annotation file updated successfully: {null_annotation_file}.")
+        return null_annotation_file
+    except Exception as e:
+        raise OSError(
+            f"Error updating null annotation file: {null_annotation_file}"
+        ) from e
+    
 
 def get_uuid_history(annotation: pd.DataFrame) -> dict:
     """Get the UUID history from the annotation file.
