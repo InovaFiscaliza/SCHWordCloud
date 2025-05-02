@@ -70,15 +70,12 @@ def _get_local_data_home(data_home=None) -> dict:
     makedirs(sch_data_home, exist_ok=True)
     makedirs(search_results_data_home, exist_ok=True)
 
-    local_data_home = {
-            "data_home": data_home,
-            "annotation_data_home": annotation_data_home,
-            "sch_data_home": sch_data_home,
-            "search_results_data_home": search_results_data_home,
-        } 
-
-    # Return the data home path
-    return local_data_home
+    return {
+        "data_home": data_home,
+        "annotation_data_home": annotation_data_home,
+        "sch_data_home": sch_data_home,
+        "search_results_data_home": search_results_data_home,
+    }
 
 def _get_cloud_data_home(config_file: str = None) -> dict:
     """Setup cloud datasets folders from a TOML file.
@@ -140,11 +137,10 @@ def _get_cloud_data_home(config_file: str = None) -> dict:
                     "GET/POST cloud configuration folders not found. Check config file."
                 )
 
-    cloud_data_home = {
+    return {
         "cloud_annotation_get_folder": cloud_annotation_get_folder,
-        "cloud_annotation_post_folder": cloud_annotation_post_folder,}
-    
-    return cloud_data_home
+        "cloud_annotation_post_folder": cloud_annotation_post_folder,
+    }
 
 def _get_api_credentiails(config_file: str = None) -> dict:
     """Load API credentials from a TOML file.
@@ -230,10 +226,8 @@ def load_config_file(config_file: str = None) -> dict:
 
     # load configuration
     data_home = config.get("data_home", None)
-    schwordcloud_config = {
+    return {
         "local_data_home": _get_local_data_home(data_home),
         "cloud_data_home": _get_cloud_data_home(config_file),
         "api_credentials": _get_api_credentiails(config_file),
-        }
-
-    return schwordcloud_config
+    }
