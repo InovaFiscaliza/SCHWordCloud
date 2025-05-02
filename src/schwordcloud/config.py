@@ -115,27 +115,26 @@ def _get_cloud_data_home(config_file: str = None) -> dict:
     # check if the config file has the required keys
     if config.get("cloud", None) is None:
         raise ValueError("Cloud configuration is missing in the config file.")
-    else:
-        cloud_annotation_get_folder = config["cloud"].get(
-            "cloud_annotation_get_folder", None
+    cloud_annotation_get_folder = config["cloud"].get(
+        "cloud_annotation_get_folder", None
+    )
+    cloud_annotation_post_folder = config["cloud"].get(
+        "cloud_annotation_post_folder", None
+    )
+    
+    if not all([cloud_annotation_get_folder, cloud_annotation_post_folder]):
+        raise ValueError(
+            "GET/POST cloud configuration is missing in the config file."
         )
-        cloud_annotation_post_folder = config["cloud"].get(
-            "cloud_annotation_post_folder", None
+    if not all(
+        [
+            exists(cloud_annotation_get_folder),
+            exists(cloud_annotation_post_folder),
+        ]
+    ):
+        raise FileNotFoundError(
+            "GET/POST cloud configuration folders not found. Check config file."
         )
-        if not all([cloud_annotation_get_folder, cloud_annotation_post_folder]):
-            raise ValueError(
-                "GET/POST cloud configuration is missing in the config file."
-            )
-        else:
-            if not all(
-                [
-                    exists(cloud_annotation_get_folder),
-                    exists(cloud_annotation_post_folder),
-                ]
-            ):
-                raise FileNotFoundError(
-                    "GET/POST cloud configuration folders not found. Check config file."
-                )
 
     return {
         "cloud_annotation_get_folder": cloud_annotation_get_folder,
@@ -181,9 +180,8 @@ def _get_api_credentiails(config_file: str = None) -> dict:
 
     if not exists(credentials_file):
         raise FileNotFoundError(f"Credentials file not found: {credentials_file}")
-    else:
-        with open(credentials_file, "rb") as f:
-            credentials = tomllib.load(f)
+    with open(credentials_file, "rb") as f:
+        credentials = tomllib.load(f)
 
     return credentials
 
@@ -220,9 +218,8 @@ def load_config_file(config_file: str = None) -> dict:
 
     if not exists(config_file):
         raise FileNotFoundError(f"Config file not found: {config_file}")
-    else:
-        with open(config_file, "rb") as f:
-            config = tomllib.load(f)
+    with open(config_file, "rb") as f:
+        config = tomllib.load(f)
 
     # load configuration
     data_home = config.get("data_home", None)
