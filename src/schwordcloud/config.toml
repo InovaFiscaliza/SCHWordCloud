@@ -1,4 +1,4 @@
-data_home = "D:\\Users\\maxwelfreitas\\OneDrive - ANATEL\\Rascunho\\schwordcloud\\datasets"
+data_home = "D:\\Users\\maxwelfreitas\\OneDrive - ANATEL\\AppData\\schwordcloud\\datasets"
 
 [cloud]
 cloud_annotation_get_folder = "D:\\Users\\maxwelfreitas\\ANATEL\\InovaFiscaliza - DataHub - GET\\SCH"
