@@ -61,6 +61,7 @@ def _get_local_data_home(data_home=None) -> dict:
     if not isdir(data_home):      
         raise NotADirectoryError(f"Data home is not a directory: {data_home}")
 
+    data_home = expanduser(data_home)
     annotation_data_home = join(data_home, "annotation")
     sch_data_home = join(data_home, "sch")
     search_results_data_home = join(data_home, "search_results")
