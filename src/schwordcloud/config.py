@@ -4,9 +4,10 @@ from os.path import exists, expanduser, join, isdir, dirname
 
 
 def _get_local_data_home(data_home=None) -> dict:
-    """Setup local datasets folders.
+    """Determine and create local data home directories for schwordcloud datasets.
 
-    Local datasets are stored in the following folders:
+    Sets up the local directory structure for storing schwordcloud-related data files,
+    with configurable base directory and automatic directory creation as ilustrated:
 
     schwordcloud/                           # The main folder for the schwordcloud data_home
     └── datasets/                           # The data home folder -> data_home
@@ -17,11 +18,14 @@ def _get_local_data_home(data_home=None) -> dict:
         |   └── produtos_certificados.zip   # SCH database file fetched from the internet -> local_sch_file
         └── search_results/                 # Contains the JSON files with search results data -> search_results_data_home
 
+    The function supports setting the data home via environment variable, explicit path,
+    or using default system-specific locations. It ensures required subdirectories exist
+    for annotations, SCH database, and search results.
+    
     By default the data directory is set to a folder named 'schwordcloud/datasets' in the
-    user home folder.
-
-    Alternatively, it can be set by the 'SCH_DATAHOME' environment
-    variable or programmatically by giving an explicit folder path.
+    user home folder. 
+    Alternatively, it can be set by the 'SCH_DATAHOME' environment variable 
+    or programmatically by giving an explicit folder path. 
     The '~' symbol is expanded to the user home folder.
 
     If the folders does not already exist, it is automatically created.
@@ -149,7 +153,8 @@ def _get_api_credentiails(config_file: str = None) -> dict:
     ----------
     config_file: str, default = None
         Path to the TOML configuration file. If `None`, a FileNotFoundError is raised.
-        The credentials file path shold be set in the config file a form of a table (collections of key/value pairs):
+        
+        The credentials file path should be set in the config file a form of a table (collections of key/value pairs):
 
         [credentials]
         credentials_file = "path/to/credentials/file"
@@ -195,6 +200,18 @@ def load_config_file(config_file: str = None) -> dict:
     config_file : str, default = None
         Path to the TOML configuration file. If `None`, the default config_file
         is `./config.toml`.
+
+    The config file should contain the path for local data home folder, cloud annotation folder 
+    and credentials files in the following format:
+
+        data_home = "path/to/data/home/folder"
+
+        [cloud]
+        cloud_annotation_get_folder = "path/to/cloud/annotation/get/folder"
+        cloud_annotation_post_folder = "path/to/cloud/annotation/post/folder"
+        
+        [credentials]
+        credentials_file = "path/to/credentials/file"
 
     Returns
     -------
