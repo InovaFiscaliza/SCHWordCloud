@@ -3,6 +3,7 @@ import random
 import uuid
 from datetime import datetime
 from os import environ
+from os.path import exists, join
 
 import pandas as pd
 
@@ -160,10 +161,34 @@ class DataManager:
         try:
             # Save the new annotation to the cloud folder
             save_cloud_annotation(annotation, self.cloud_annotation_post_folder)
-            # Save the new annotation to the local folder
+            # Update the new null annotation to the local folder
             update_null_annotation(annotation, self.annotation_data_home)
             # Clear the cached annotation
             self._cached_annotation = []
             print("Annotation saved successfully.")
         except Exception as e:
             print(f"Error saving annotation: {e}")
+
+    def save_search_results(self) -> None:
+        """
+        Save the search results to the local file.
+        """
+
+        if not self._cached_search_results:
+            print("No new search results to save.")
+            return
+               
+        search_history_parquet = join(self.search_results_data_home, 'search_history.parquet')
+        if exists(search_history_parquet):
+            df_search_history = pd.read_parquet(search_history_parquet)
+        else:
+            df_search_history = pd.DataFrame()
+
+        try:
+            raw_contents = [json.dumps(result['raw_contents']) for result in self._cached_search_results]
+            df_search_history = pd.contcat([df_search_history, pd.DataFrame(raw_contents, columns=['raw_contents'])])
+            df_search_history.to_parquet(search_history_parquet, index=False)
+            # Clear the cached search results
+            self._cached_search_results = []
+        except Exception as e:
+            print(f"Error saving search results: {e}")
