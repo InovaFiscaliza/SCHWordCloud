@@ -109,7 +109,7 @@ class BaseSearch:
 
         # Get the n most common words
         common_words = words_counter.most_common(n_words)
-        wordcloud = {key: value for key, value in common_words}
+        wordcloud = dict(common_words)
         wordcloud = json.dumps(wordcloud, ensure_ascii=False)
 
         return wordcloud

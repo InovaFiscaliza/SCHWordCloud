@@ -29,6 +29,11 @@ class GoogleSearch(BaseSearch):
     def _source(self):
         # Define the source name for Google Search
         return "GOOGLE"
+    
+    @property
+    def _results_key(self):
+        # Define the key for the search results in the response
+        return "items"
 
     @property
     def _fields_of_interest(self):
@@ -76,7 +81,7 @@ class GoogleSearch(BaseSearch):
         fields = []
         text = ""
         if status_code == 200:
-            if items := content.get("items"):
+            if items := content.get(self._results_key,[]):
                 fields, text = self._extract_text(items)
 
         search_result = {

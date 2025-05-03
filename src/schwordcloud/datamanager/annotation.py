@@ -1,5 +1,5 @@
 """
-Annotation data management module for SchWordCloud.
+Annotation data management module for SCHWordCloud.
 
 This module provides functions to fetch, save, and update annotation data used by the word cloud
 generation system. It handles both regular annotations and null annotations (for searches with no results).
@@ -15,7 +15,6 @@ Constants:
 
 from datetime import datetime
 from os.path import exists, join
-from pathlib import Path
 from shutil import copyfile
 
 import pandas as pd
@@ -41,7 +40,7 @@ def fetch_annotation(
 
     Returns
     -------
-    frame -> pd.DataFrame
+    annotation -> pd.DataFrame
         A DataFrame containing annotation data filtered for WordCloud attributes,
         combining both main annotation and null annotation files.
 
@@ -54,10 +53,10 @@ def fetch_annotation(
 
     """
     cloud_annotation_file = join(cloud_annotation_folder, "Annotation.xlsx")
-    cloud_null_annotation_file = join(cloud_annotation_folder, "NullAnnotation.xlsx")
+    cloud_null_annotation_file = join(cloud_annotation_folder, "AnnotationNull.xlsx")
 
     local_annotation_file = join(local_annotation_folder, "Annotation.xlsx")
-    local_null_annotation_file = join(local_annotation_folder, "NullAnnotation.xlsx")
+    local_null_annotation_file = join(local_annotation_folder, "AnnotationNull.xlsx")
 
     if not exists(cloud_annotation_file):
         raise FileNotFoundError(
@@ -67,8 +66,8 @@ def fetch_annotation(
     copyfile(cloud_annotation_file, local_annotation_file)
     if not exists(local_annotation_file):
         raise OSError(f"Error fetching annotation file: {cloud_annotation_file}")
-    else:
-        frame = pd.read_excel(local_annotation_file)
+
+    annotation = pd.read_excel(local_annotation_file)
 
     if exists(cloud_null_annotation_file):
         copyfile(cloud_null_annotation_file, local_null_annotation_file)
@@ -79,26 +78,34 @@ def fetch_annotation(
 
     if exists(local_null_annotation_file):
         null_annotation = pd.read_excel(local_null_annotation_file)
-        frame = pd.concat([frame, null_annotation], ignore_index=True)
+        annotation = pd.concat([annotation, null_annotation], ignore_index=True)
 
-    frame = frame[frame["Atributo"] == "WordCloud"].reset_index(drop=True)
+    annotation = annotation[annotation["Atributo"] == "WordCloud"].reset_index(
+        drop=True
+    )
 
-    return frame
+    return annotation
 
 
 def save_cloud_annotation(annotation: pd.DataFrame, cloud_annotation_post_folder: str):
-    """Save the annotation file to the specified path.
+    """Save annotations with status 1 to a timestamped Excel file in the specified cloud annotation post folder.
+
+    This function handles the process of saving annotation to a timestamped Excel file by:
+    - Creating a timestamped filename in the format specified by ANOTATION_FILE_TS_FORMAT
+    - Skiping saving if no annotations with status 1 are present
+    - Printing a success message upon successful file save
 
     Parameters
     ----------
-    annotation : DataFrame
-        The annotation data to be saved.
+    annotation : pd.DataFrame
+        The DataFrame containing annotations to be saved, filtered to only include entries with 'Situação' == 1.
+    cloud_annotation_post_folder : str
+        The directory path where the timestamped annotation file will be saved.
 
-    annotation_folder : str
-        The path of the folder where the annotation file will be stored.
-
-    Returns
-    -------
+    Raises
+    ------
+    OSError
+        If there is an error writing the annotation file to disk.
 
     """
 
@@ -117,57 +124,70 @@ def save_cloud_annotation(annotation: pd.DataFrame, cloud_annotation_post_folder
 
 
 def update_null_annotation(annotation: pd.DataFrame, annotation_data_home: str) -> None:
-    """Update the null annotation file with the new null annotation data.
+    """Update the null annotation file with new null annotations.
+
+    This function handles the process of updating a null annotation Excel file by:
+    - Filtering annotations with 'Situação' == -1 as null annotations
+    - Appending new null annotations to an existing file
+    - Removing duplicate entries based on the 'ID' column
 
     Parameters
     ----------
-    annotation : DataFrame
-        The annotation data to be saved.
+    annotation : pd.DataFrame
+        The annotation DataFrame containing null annotations to be added.
+    annotation_data_home : str
+        The directory path where the null annotation file is stored.
 
-    null_annotation_file : str or Path
-        The path of the null annotation file.
+    Returns
+    -------
+    bool
+        True if the null annotation file was successfully updated, False if no updates were made.
 
-    ignore_not_found : bool, default=False
-            If True, the function will not raise an error if the null annotation file is not found.
-
+    Raises
+    ------
+    OSError
+        If there is an error writing to the null annotation file.
     """
 
-    df_null_annotation = annotation[annotation["Situação"] == -1]
+    null_annotation = annotation[annotation["Situação"] == -1]
 
-    if df_null_annotation.empty:
+    if null_annotation.empty:
         print("Nothing to update in null annotation file.")
-        return
+        return False
 
     null_annotation_file = join(annotation_data_home, "AnnotationNull.xlsx")
     if exists(null_annotation_file):
-        df_null_annotation_history = pd.read_excel(null_annotation_file)
-        df_null_annotation = pd.concat(
-            [df_null_annotation_history, df_null_annotation], ignore_index=True
+        null_annotation_history = pd.read_excel(null_annotation_file)
+        null_annotation = pd.concat(
+            [null_annotation_history, null_annotation], ignore_index=True
         )
-        df_null_annotation = df_null_annotation.drop_duplicates(subset=["ID"])
+        null_annotation = null_annotation.drop_duplicates(subset=["ID"])
 
     try:
-        df_null_annotation.to_excel(null_annotation_file, index=False)
+        null_annotation.to_excel(null_annotation_file, index=False)
         print(f"Null annotation file updated successfully: {null_annotation_file}.")
-        return null_annotation_file
+        return True
     except Exception as e:
         raise OSError(
             f"Error updating null annotation file: {null_annotation_file}"
         ) from e
-    
+
 
 def get_uuid_history(annotation: pd.DataFrame) -> dict:
     """Get the UUID history from the annotation file.
+
+    Extracts a dictionary mapping homologation status to ID from the annotation DataFrame.
+
     Parameters
     ----------
-    annotation : DataFrame
-    The annotation data to be saved.
+    annotation : pd.DataFrame
+        The annotation DataFrame containing 'Homologação' and 'ID' columns.
+
     Returns
     -------
-    uuid_history : dict
-    A dictionary containing the UUID history.
+    dict
+        A dictionary where keys are homologation values and values are corresponding IDs.
     """
-
     annotation_uuid = annotation[["Homologação", "ID"]].to_dict("split")["data"]
-    uuid_history = {key: value for key, value in annotation_uuid}
-    return uuid_history
+
+    return dict(annotation_uuid)
