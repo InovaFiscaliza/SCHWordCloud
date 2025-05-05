@@ -101,7 +101,33 @@ class BaseSearch:
             token for token in TOKEN_PATTERN.findall(text.lower()) if token.isalpha()
         ]
         # Remove stop words
-        stop_words = stopwords.words('english') + stopwords.words('portuguese')
+        stop_words = stopwords.words("english") + stopwords.words("portuguese")
+        # stopwords específicas do domínio
+        stop_words.extend(
+            [
+                "cm",
+                "feature",
+                "features",
+                "informações",
+                "itens",
+                "leve",
+                "list",
+                "nulo",
+                "package",
+                "pacote",
+                "pacotes",
+                "recurso",
+                "tamanho",
+                "ver",
+                "anatel",
+                "laranja",
+                ".",
+                "...",
+                "complementares",
+                "peça",
+            ]
+        )
+
         tokens = [token for token in tokens if token not in stop_words]
 
         # Split the text into words and count occurrences
