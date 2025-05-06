@@ -13,11 +13,14 @@ Constants:
     ANOTATION_FILE_TS_FORMAT: Time format string used for annotation file timestamps.
 """
 
+import logging
 from datetime import datetime
 from os.path import exists, join
 from shutil import copyfile
 
 import pandas as pd
+
+logger = logging.getLogger(__name__)
 
 # time format for annotation file
 ANOTATION_FILE_TS_FORMAT = "%Y.%m.%d_T%H.%M.%S"
@@ -59,12 +62,14 @@ def fetch_annotation(
     local_null_annotation_file = join(local_annotation_folder, "AnnotationNull.xlsx")
 
     if not exists(cloud_annotation_file):
+        logger.error(f"Annotation file not found: {cloud_annotation_file}")
         raise FileNotFoundError(
             f"Annotation file not found: {cloud_null_annotation_file}"
         )
 
     copyfile(cloud_annotation_file, local_annotation_file)
     if not exists(local_annotation_file):
+        logger.error(f"Error fetching annotation file: {cloud_annotation_file}")
         raise OSError(f"Error fetching annotation file: {cloud_annotation_file}")
 
     annotation = pd.read_excel(local_annotation_file)
@@ -72,6 +77,9 @@ def fetch_annotation(
     if exists(cloud_null_annotation_file):
         copyfile(cloud_null_annotation_file, local_null_annotation_file)
         if not exists(local_null_annotation_file):
+            logger.error(
+                f"Error fetching null annotation file: {cloud_null_annotation_file}"
+            )
             raise OSError(
                 f"Error fetching null annotation file: {cloud_null_annotation_file}"
             )
@@ -108,18 +116,19 @@ def save_cloud_annotation(annotation: pd.DataFrame, cloud_annotation_post_folder
         If there is an error writing the annotation file to disk.
 
     """
-
+    logger.info("Saving annotation file...")
     annotation = annotation[annotation["Situação"] == 1]
     if annotation.empty:
-        print("Nothing to save in annotation file.")
+        logger.info("  Nothing to save in annotation file.")
     else:
         annotation_ts = datetime.now().strftime(ANOTATION_FILE_TS_FORMAT)
         annotation_file = f"Annotation_{annotation_ts}.xlsx"
         annotation_file = join(cloud_annotation_post_folder, annotation_file)
         try:
             annotation.to_excel(annotation_file, index=False)
-            print(f"Annotation file saved successfully: {annotation_file}")
+            logger.info(f"  Annotation file saved successfully: {annotation_file}")
         except Exception as e:
+            logger.error(f"Error saving annotation file: {annotation_file}")
             raise OSError(f"Error saving annotation file: {annotation_file}") from e
 
 
@@ -148,11 +157,11 @@ def update_null_annotation(annotation: pd.DataFrame, annotation_data_home: str) 
     OSError
         If there is an error writing to the null annotation file.
     """
-
+    logger.info("Updating null annotation file...")
     null_annotation = annotation[annotation["Situação"] == -1]
 
     if null_annotation.empty:
-        print("Nothing to update in null annotation file.")
+        logger.info("  Nothing to update in null annotation file.")
         return False
 
     null_annotation_file = join(annotation_data_home, "AnnotationNull.xlsx")
@@ -165,9 +174,12 @@ def update_null_annotation(annotation: pd.DataFrame, annotation_data_home: str) 
 
     try:
         null_annotation.to_excel(null_annotation_file, index=False)
-        print(f"Null annotation file updated successfully: {null_annotation_file}.")
+        logger.info(
+            f"  Null annotation file updated successfully: {null_annotation_file}."
+        )
         return True
     except Exception as e:
+        logger.error(f"Error updating null annotation file: {null_annotation_file}")
         raise OSError(
             f"Error updating null annotation file: {null_annotation_file}"
         ) from e

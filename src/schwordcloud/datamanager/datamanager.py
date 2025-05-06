@@ -1,4 +1,5 @@
 import json
+import logging
 import random
 import uuid
 from datetime import datetime
@@ -6,6 +7,8 @@ from os import environ
 from os.path import exists, join
 
 import pandas as pd
+
+logger = logging.getLogger(__name__)
 
 from .annotation import (
     fetch_annotation,
@@ -201,7 +204,7 @@ class DataManager:
         """
 
         if not self._cached_annotation:
-            print("No new annotations to save.")
+            logger.info("No new annotations to save.")
             return
 
         annotation = pd.DataFrame(self._cached_annotation)
@@ -213,7 +216,6 @@ class DataManager:
             update_null_annotation(annotation, self.annotation_data_home)
             # Clear the cached annotation
             self._cached_annotation = []
-            print("Annotation saved successfully.")
         except Exception as e:
             print(f"Error saving annotation: {e}")
 
@@ -230,9 +232,9 @@ class DataManager:
 
         Prints a message if no search results are available or if an error occurs during saving.
         """
-
+        logger.info("Saving search results...")
         if not self._cached_search_results:
-            print("No new search results to save.")
+            logger.info("  No new search results to save.")
             return
 
         search_history_parquet = join(
@@ -258,4 +260,5 @@ class DataManager:
             # Clear the cached search results
             self._cached_search_results = []
         except Exception as e:
-            print(f"Error saving search results: {e}")
+            logger.error(f"Error saving search results: {search_history_parquet}")
+            raise OSError("Error saving search results") from e

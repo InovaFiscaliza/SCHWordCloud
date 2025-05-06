@@ -1,6 +1,11 @@
+import logging
 import tomllib
 from os import environ, makedirs
-from os.path import exists, expanduser, join, isdir, dirname
+from os.path import dirname, exists, expanduser, isdir, join
+
+import nltk
+
+logger = logging.getLogger(__name__)
 
 
 def _get_local_data_home(data_home=None) -> dict:
@@ -73,6 +78,11 @@ def _get_local_data_home(data_home=None) -> dict:
     makedirs(sch_data_home, exist_ok=True)
     makedirs(search_results_data_home, exist_ok=True)
 
+    logger.info("Local data home setup: %s", data_home)
+    logger.info("--Annotation data home: %s", annotation_data_home)
+    logger.info("--SCH data home: %s", sch_data_home)
+    logger.info("--Search results data home: %s", search_results_data_home)
+
     return {
         "data_home": data_home,
         "annotation_data_home": annotation_data_home,
@@ -137,6 +147,9 @@ def _get_cloud_data_home(config_file: str = None) -> dict:
         raise FileNotFoundError(
             "GET/POST cloud configuration folders not found. Check config file."
         )
+    logger.info("Cloud annotation folders found.")
+    logger.info("--Cloud annotation get folder: %s", cloud_annotation_get_folder)
+    logger.info("--Cloud annotation post folder: %s", cloud_annotation_post_folder)
 
     return {
         "cloud_annotation_get_folder": cloud_annotation_get_folder,
@@ -186,6 +199,8 @@ def _get_api_credentiails(config_file: str = None) -> dict:
     with open(credentials_file, "rb") as f:
         credentials = tomllib.load(f)
 
+    logger.info("Credentials file found: %s:", credentials_file)
+
     return credentials
 
 
@@ -227,6 +242,10 @@ def load_config_file(config_file: str = None) -> dict:
 
     # load configuration
     data_home = config.get("data_home", None)
+
+    # download NLTK data if not available
+    nltk.download("stopwords", quiet=True)
+
     return {
         "local_data_home": _get_local_data_home(data_home),
         "cloud_data_home": _get_cloud_data_home(config_file),
