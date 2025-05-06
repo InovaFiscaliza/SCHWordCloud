@@ -234,7 +234,7 @@ class DataManager:
         """
         logger.info("Saving search results...")
         if not self._cached_search_results:
-            logger.info("  No new search results to save.")
+            logger.info("No new search results to save.")
             return
 
         search_history_parquet = join(

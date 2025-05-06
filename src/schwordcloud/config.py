@@ -79,9 +79,9 @@ def _get_local_data_home(data_home=None) -> dict:
     makedirs(search_results_data_home, exist_ok=True)
 
     logger.info("Local data home setup: %s", data_home)
-    logger.info("--Annotation data home: %s", annotation_data_home)
-    logger.info("--SCH data home: %s", sch_data_home)
-    logger.info("--Search results data home: %s", search_results_data_home)
+    logger.info("->Annotation data home: %s", annotation_data_home)
+    logger.info("->SCH data home: %s", sch_data_home)
+    logger.info("->Search results data home: %s", search_results_data_home)
 
     return {
         "data_home": data_home,
@@ -148,8 +148,8 @@ def _get_cloud_data_home(config_file: str = None) -> dict:
             "GET/POST cloud configuration folders not found. Check config file."
         )
     logger.info("Cloud annotation folders found.")
-    logger.info("--Cloud annotation get folder: %s", cloud_annotation_get_folder)
-    logger.info("--Cloud annotation post folder: %s", cloud_annotation_post_folder)
+    logger.info("->Cloud annotation get folder: %s", cloud_annotation_get_folder)
+    logger.info("->Cloud annotation post folder: %s", cloud_annotation_post_folder)
 
     return {
         "cloud_annotation_get_folder": cloud_annotation_get_folder,
