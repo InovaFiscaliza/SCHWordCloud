@@ -1,9 +1,9 @@
 import logging
 from time import sleep
 
-from config import load_config_file
-from datamanager import DataManager
-from websearch import GoogleSearch
+from .config import load_config_file
+from .datamanager import DataManager
+from .websearch import GoogleSearch
 
 logger = logging.getLogger(__name__)
 
