@@ -1,2 +1,2 @@
 @echo off
-uv run .\run.py 
+uv run .\src\schwordcloud\runschwordcloud.py
