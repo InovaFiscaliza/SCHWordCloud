@@ -49,7 +49,7 @@ def run_schwordcloud():
     logger.info("SCHWordCloud started.")
     logger.debug(f"Configuration file: {args.config_file}")
 
-    schwc = SCHWordCloud()
+    schwc = SCHWordCloud(config_file=args.config_file)
     schwc.generate_wordcloud()
 
     logger.info("SCHWordCloud finished.")
