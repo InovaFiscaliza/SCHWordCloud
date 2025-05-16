@@ -21,7 +21,7 @@ class SCHWordCloud:
         self.config = load_config_file(config_file)
         self.dm = DataManager(self.config)
         self.gs = GoogleSearch(
-            self.config["api_credentials"]["google_search"]["maxwelfreitas"]
+            self.config["api_credentials"]["google_search"]
         )
 
     def _generate_wordcloud(self, search_term: str):

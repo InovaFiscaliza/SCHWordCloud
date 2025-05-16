@@ -206,10 +206,10 @@ def _get_api_credentiails(config_file: str = None) -> dict:
     if not exists(credentials_file):
         logger.error(f"Credentials file not found: {credentials_file}")
         raise FileNotFoundError(f"Credentials file not found: {credentials_file}")
+    
+    logger.info(f"Credentials file found: {credentials_file}")
     with open(credentials_file, "rb") as f:
         credentials = tomllib.load(f)
-
-    logger.info(f"Credentials file found: {credentials_file}")
 
     return credentials
 
