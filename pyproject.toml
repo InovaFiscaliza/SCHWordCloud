@@ -1,7 +1,7 @@
 [project]
-name = "schwordcloud"
+name = "SCHWordCloud"
 version = "0.1.0"
-description = "Add your description here"
+description = "SCHWordCloud is a class for generating word clouds based on search results."
 readme = "README.md"
 authors = [
     { name = "Maxwel de Souza Freitas", email = "maxwel@maxwelfreitas.com.br" }
