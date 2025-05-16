@@ -64,8 +64,10 @@ def _get_local_data_home(data_home=None) -> dict:
         makedirs(data_home, exist_ok=True)
 
     if not exists(data_home):
+        logger.error(f"Data home not found: {data_home}")
         raise FileNotFoundError(f"Data home not found: {data_home}")
     if not isdir(data_home):
+        logger.error(f"Data home is not a directory: {data_home}")
         raise NotADirectoryError(f"Data home is not a directory: {data_home}")
 
     data_home = expanduser(data_home)
@@ -79,9 +81,9 @@ def _get_local_data_home(data_home=None) -> dict:
     makedirs(search_results_data_home, exist_ok=True)
 
     logger.info("Local data home setup: %s", data_home)
-    logger.info("->Annotation data home: %s", annotation_data_home)
-    logger.info("->SCH data home: %s", sch_data_home)
-    logger.info("->Search results data home: %s", search_results_data_home)
+    logger.info("Annotation data home: %s", annotation_data_home)
+    logger.info("SCH data home: %s", sch_data_home)
+    logger.info("Search results data home: %s", search_results_data_home)
 
     return {
         "data_home": data_home,
@@ -120,6 +122,7 @@ def _get_cloud_data_home(config_file: str = None) -> dict:
 
     # open the config file and load the cloud configuration
     if config_file is None:
+        logger.error("Config file is not provided.")
         raise ValueError("Config file is not provided.")
     config_file = expanduser(config_file)
 
@@ -128,6 +131,7 @@ def _get_cloud_data_home(config_file: str = None) -> dict:
 
     # check if the config file has the required keys
     if config.get("cloud", None) is None:
+        logger.error("Cloud configuration is missing in the config file.")
         raise ValueError("Cloud configuration is missing in the config file.")
     cloud_annotation_get_folder = config["cloud"].get(
         "cloud_annotation_get_folder", None
@@ -137,6 +141,7 @@ def _get_cloud_data_home(config_file: str = None) -> dict:
     )
 
     if not all([cloud_annotation_get_folder, cloud_annotation_post_folder]):
+        logger.error("GET/POST cloud configuration is missing in the config file.")
         raise ValueError("GET/POST cloud configuration is missing in the config file.")
     if not all(
         [
@@ -144,12 +149,15 @@ def _get_cloud_data_home(config_file: str = None) -> dict:
             exists(cloud_annotation_post_folder),
         ]
     ):
+        logger.error(
+            "GET/POST cloud configuration folders not found. Check config file."
+        )
         raise FileNotFoundError(
             "GET/POST cloud configuration folders not found. Check config file."
         )
     logger.info("Cloud annotation folders found.")
-    logger.info("->Cloud annotation get folder: %s", cloud_annotation_get_folder)
-    logger.info("->Cloud annotation post folder: %s", cloud_annotation_post_folder)
+    logger.info(f"Cloud annotation get folder: {cloud_annotation_get_folder}")
+    logger.info(f"Cloud annotation post folder: {cloud_annotation_post_folder}")
 
     return {
         "cloud_annotation_get_folder": cloud_annotation_get_folder,
@@ -181,7 +189,8 @@ def _get_api_credentiails(config_file: str = None) -> dict:
 
     # open the config file and load the cloud configuration
     if config_file is None:
-        raise ValueError("Config file is not provided.")
+        logger.error("Config file was not provided.")
+        raise ValueError("Config file was not provided.")
     config_file = expanduser(config_file)
 
     with open(config_file, "rb") as f:
@@ -195,11 +204,12 @@ def _get_api_credentiails(config_file: str = None) -> dict:
     credentials_file = expanduser(credentials_file)
 
     if not exists(credentials_file):
+        logger.error(f"Credentials file not found: {credentials_file}")
         raise FileNotFoundError(f"Credentials file not found: {credentials_file}")
     with open(credentials_file, "rb") as f:
         credentials = tomllib.load(f)
 
-    logger.info("Credentials file found: %s:", credentials_file)
+    logger.info(f"Credentials file found: {credentials_file}")
 
     return credentials
 
@@ -236,6 +246,7 @@ def load_config_file(config_file: str = None) -> dict:
         config_file = join(dirname(__file__), "config.toml")
 
     if not exists(config_file):
+        logger.error(f"Config file not found: {config_file}")
         raise FileNotFoundError(f"Config file not found: {config_file}")
     with open(config_file, "rb") as f:
         config = tomllib.load(f)

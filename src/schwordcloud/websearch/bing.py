@@ -1,7 +1,10 @@
+import logging
 import requests
 
 from .base import BaseSearch
 
+# logging configuration
+logger = logging.getLogger(__name__)
 
 class BingSearch(BaseSearch):
     """
@@ -22,6 +25,7 @@ class BingSearch(BaseSearch):
 
 
         if not all([self._api_key, self._endpoint]):
+            logger.error("Missing required Bing Search credentials.")
             raise ValueError("Missing required Bing Search credentials.")
 
     @property

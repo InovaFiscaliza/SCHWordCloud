@@ -1,3 +1,4 @@
+import logging
 import os
 import shutil
 import time
@@ -10,6 +11,8 @@ from urllib.error import URLError
 from urllib.request import urlretrieve
 
 import pandas as pd
+
+logger = logging.getLogger(__name__)
 
 REMOTE_SCH_DATASET = {
     "url": "https://www.anatel.gov.br/dadosabertos/paineis_de_dados/certificacao_de_produtos",
@@ -73,10 +76,12 @@ def _download_sch_database(
             except (URLError, TimeoutError):
                 if n_retries == 0:
                     # If no more retries are left, re-raise the caught exception.
-                    raise
-                warnings.warn(
-                    f"Retry downloading from url: {REMOTE_SCH_DATASET['url']}"
-                )
+                    logger.info(
+                        f"Retry downloading from url: {REMOTE_SCH_DATASET['url']}"
+                    )
+                    raise warnings.warn(
+                        f"Retry downloading from url: {REMOTE_SCH_DATASET['url']}"
+                    )
                 n_retries -= 1
                 time.sleep(delay)
     except (Exception, KeyboardInterrupt):
@@ -89,6 +94,7 @@ def _download_sch_database(
     # they are not.
     shutil.move(temp_file_path, local_sch_file_path)
     if not exists(local_sch_file_path):
+        logger.error("Error downloading SCH Database file.")
         raise OSError("Error downloading SCH Database file.")
 
     return local_sch_file_path
@@ -201,8 +207,10 @@ def fetch_sch_database(
     """
 
     if not exists(sch_data_home):
+        logger.error(f"Local SCH folder not found: {sch_data_home}")
         raise FileNotFoundError(f"Local SCH folder not found: {sch_data_home}")
     if not isdir(sch_data_home):
+        logger.error(f"Local SCH folder is not a directory: {sch_data_home}")
         raise OSError(f"Local SCH folder is not a directory: {sch_data_home}")
 
     local_sch_file_path = join(sch_data_home, REMOTE_SCH_DATASET["filename"])
@@ -212,29 +220,31 @@ def fetch_sch_database(
         sch_file_ctime = datetime.fromtimestamp(getmtime(local_sch_file_path))
         sch_file_age = datetime.now() - sch_file_ctime
         if sch_file_age.days > download_grace_period:
-            print(
+            logger.info(
                 f"File {local_sch_file_path} is older than {download_grace_period} days. "
                 "Re-downloading the file..."
             )
             _download_sch_database(sch_data_home, n_retries=n_retries, delay=delay)
         elif force_download:
             # If the file is not older than the grace period and force_download is True, download it
-            print(
+            logger.info(
                 f"File {local_sch_file_path} is not older than {download_grace_period} days. "
                 "Re-downloading the file (forced)..."
             )
             _download_sch_database(sch_data_home, n_retries=n_retries, delay=delay)
-            print("Download complete.")
+            logger.info("Download complete.")
     elif download_if_missing:
         # If the file does not exist and download_if_missing is True, download it
-        print(
-            f"File {local_sch_file_path} does not exist.\nDownloading the file...",
-            end=" ",
+        logger.info(
+            f"File {local_sch_file_path} does not exist. Downloading the file..."
         )
         _download_sch_database(sch_data_home, n_retries=n_retries, delay=delay)
-        print("Download complete.")
+        logger.info("Download complete.")
     else:
         # If the file does not exist and download_if_missing is False, raise an error
+        logger.error(
+            f"File {local_sch_file_path} does not exist. Set download_if_missing=True to download it."
+        )
         raise OSError(
             f"File {local_sch_file_path} does not exist. Set download_if_missing=True to download it."
         )

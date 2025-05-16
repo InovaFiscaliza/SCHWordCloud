@@ -1,7 +1,10 @@
+import logging
 import requests
 
 from .base import BaseSearch
 
+# logging configuration
+logger = logging.getLogger(__name__)
 
 class GoogleSearch(BaseSearch):
     """
@@ -23,6 +26,7 @@ class GoogleSearch(BaseSearch):
         self._engine_id = credentials.get("google_search_engine_id", None)
 
         if not all([self._api_key, self._endpoint, self._engine_id]):
+            logger.error("Missing required Google Search credentials.")
             raise ValueError("Missing required Google Search credentials.")
 
     @property

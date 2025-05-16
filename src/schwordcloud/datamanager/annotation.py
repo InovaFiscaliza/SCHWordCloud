@@ -101,7 +101,7 @@ def save_cloud_annotation(annotation: pd.DataFrame, cloud_annotation_post_folder
     This function handles the process of saving annotation to a timestamped Excel file by:
     - Creating a timestamped filename in the format specified by ANOTATION_FILE_TS_FORMAT
     - Skiping saving if no annotations with status 1 are present
-    - Printing a success message upon successful file save
+    - Logging a success message upon successful file save
 
     Parameters
     ----------
@@ -119,14 +119,14 @@ def save_cloud_annotation(annotation: pd.DataFrame, cloud_annotation_post_folder
     logger.info("Saving annotation file...")
     annotation = annotation[annotation["Situação"] == 1]
     if annotation.empty:
-        logger.info("  Nothing to save in annotation file.")
+        logger.info("Nothing to save in annotation file.")
     else:
         annotation_ts = datetime.now().strftime(ANOTATION_FILE_TS_FORMAT)
         annotation_file = f"Annotation_{annotation_ts}.xlsx"
         annotation_file = join(cloud_annotation_post_folder, annotation_file)
         try:
             annotation.to_excel(annotation_file, index=False)
-            logger.info(f"  Annotation file saved successfully: {annotation_file}")
+            logger.info(f"Annotation file saved successfully: {annotation_file}")
         except Exception as e:
             logger.error(f"Error saving annotation file: {annotation_file}")
             raise OSError(f"Error saving annotation file: {annotation_file}") from e
@@ -161,8 +161,10 @@ def update_null_annotation(annotation: pd.DataFrame, annotation_data_home: str) 
     null_annotation = annotation[annotation["Situação"] == -1]
 
     if null_annotation.empty:
-        logger.info("  Nothing to update in null annotation file.")
+        logger.info("Nothing to update in null annotation file.")
         return False
+    else:   
+        logger.debug(f"Null annotation: {null_annotation}")
 
     null_annotation_file = join(annotation_data_home, "AnnotationNull.xlsx")
     if exists(null_annotation_file):
@@ -175,7 +177,7 @@ def update_null_annotation(annotation: pd.DataFrame, annotation_data_home: str) 
     try:
         null_annotation.to_excel(null_annotation_file, index=False)
         logger.info(
-            f"  Null annotation file updated successfully: {null_annotation_file}."
+            f"Null annotation file updated successfully: {null_annotation_file}."
         )
         return True
     except Exception as e:

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 import json
 import re
 from collections import Counter
@@ -18,6 +19,9 @@ WORD_CLOUD_MODE = "API"
 # time format for wordcloud
 WORDCLOUD_TS_FORMAT = "%d/%m/%Y %H:%M:%S"
 
+# logging configuration
+logger = logging.getLogger(__name__)
+
 
 class BaseSearch:
     @property
@@ -25,16 +29,19 @@ class BaseSearch:
         """
         Return the name of the search engine.
         """
+        logger.error("Subclasses should implement property _sorce.")
         raise NotImplementedError("Subclasses should implement this property.")
 
     @property
     def _fields_of_interest(self):
+        logger.error("Subclasses should implement property _fields_of_interest.")
         raise NotImplementedError("Subclasses should implement this property.")
 
     def _request_search(self, query, count=50):
         """
         Perform a search using the specified query and return the results.
         """
+        logger.error("Subclasses should implement method _request_search.")
         raise NotImplementedError("Subclasses should implement this method.")
 
     def _extract_text(self, items):

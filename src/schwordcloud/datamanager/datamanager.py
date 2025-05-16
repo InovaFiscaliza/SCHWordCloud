@@ -182,7 +182,7 @@ class DataManager:
 
         if search_result["status_code"] in [429, 503]:
             # Handle rate limiting or service unavailable
-            print("Rate limit exceeded or service unavailable.")
+            logger.info("Rate limit exceeded or service unavailable.")
             return False
 
         self._cached_search_results.append(search_result)
@@ -200,7 +200,7 @@ class DataManager:
         4. Updates null annotations in the local folder
         5. Clears the cached annotations after successful save
 
-        Prints a success message if annotations are saved, or an error message if an exception occurs.
+        Logs a success message if annotations are saved, or an error message if an exception occurs.
         """
 
         if not self._cached_annotation:
@@ -217,7 +217,7 @@ class DataManager:
             # Clear the cached annotation
             self._cached_annotation = []
         except Exception as e:
-            print(f"Error saving annotation: {e}")
+            logger.info(f"Error saving annotation: {e}")
 
     def save_search_results(self) -> None:
         """Save the cached search results to a local Parquet file.
@@ -230,7 +230,7 @@ class DataManager:
         5. Saves the updated search history to the Parquet file
         6. Clears the cached search results after successful save
 
-        Prints a message if no search results are available or if an error occurs during saving.
+        Logs a message if no search results are available or if an error occurs during saving.
         """
         logger.info("Saving search results...")
         if not self._cached_search_results:
