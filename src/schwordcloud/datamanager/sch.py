@@ -71,6 +71,7 @@ def _download_sch_database(
         while True:
             try:
                 url = REMOTE_SCH_DATASET["url"] + "/" + REMOTE_SCH_DATASET["filename"]
+                logger.info(f"Downloading SCH database from {url}.")
                 urlretrieve(url, temp_file_path)
                 break
             except (URLError, TimeoutError):
