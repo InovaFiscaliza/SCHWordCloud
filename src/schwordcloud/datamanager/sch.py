@@ -77,11 +77,11 @@ def _download_sch_database(
                 if n_retries == 0:
                     # If no more retries are left, re-raise the caught exception.
                     logger.info(
-                        f"Retry downloading from url: {REMOTE_SCH_DATASET['url']}"
+                        f"Retry downloading from url: {url}"
                     )
-                    raise warnings.warn(
-                        f"Retry downloading from url: {REMOTE_SCH_DATASET['url']}"
-                    )
+                else:
+                    logger.error("Error downloading SCH Database file.")
+                    raise OSError("Error downloading SCH Database file.")
                 n_retries -= 1
                 time.sleep(delay)
     except (Exception, KeyboardInterrupt):
