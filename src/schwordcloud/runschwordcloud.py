@@ -41,7 +41,7 @@ def run_schwordcloud():
     # Configure the root logger
     logging.basicConfig(
         level=log_level,
-        format="%(asctime)s|%(name)s|%(message)s",
+        format="%(asctime)s|%(levelname)s|%(name)s|%(message)s",
         datefmt=LOG_TS_FORMAT,
         handlers=log_handlers,
     )
