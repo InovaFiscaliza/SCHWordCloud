@@ -56,10 +56,10 @@ def fetch_annotation(
 
     """
     cloud_annotation_file = join(cloud_annotation_folder, "Annotation.xlsx")
-    cloud_null_annotation_file = join(cloud_annotation_folder, "AnnotationNull.xlsx")
+    cloud_null_annotation_file = join(cloud_annotation_folder, "AnnotationNull.parquet")
 
     local_annotation_file = join(local_annotation_folder, "Annotation.xlsx")
-    local_null_annotation_file = join(local_annotation_folder, "AnnotationNull.xlsx")
+    local_null_annotation_file = join(local_annotation_folder, "AnnotationNull.parquet")
 
     if not exists(cloud_annotation_file):
         logger.error(f"Annotation file not found: {cloud_annotation_file}")
@@ -85,7 +85,7 @@ def fetch_annotation(
             )
 
     if exists(local_null_annotation_file):
-        null_annotation = pd.read_excel(local_null_annotation_file)
+        null_annotation = pd.read_parquet(local_null_annotation_file)
         annotation = pd.concat([annotation, null_annotation], ignore_index=True)
 
     annotation = annotation[annotation["Atributo"] == "WordCloud"].reset_index(
@@ -132,7 +132,11 @@ def save_cloud_annotation(annotation: pd.DataFrame, cloud_annotation_post_folder
             raise OSError(f"Error saving annotation file: {annotation_file}") from e
 
 
-def update_null_annotation(annotation: pd.DataFrame, annotation_data_home: str) -> None:
+def update_null_annotation(
+    annotation: pd.DataFrame,
+    annotation_data_home: str,
+    cloud_annotation_post_folder: str = None,
+) -> None:
     """Update the null annotation file with new null annotations.
 
     This function handles the process of updating a null annotation Excel file by:
@@ -163,22 +167,31 @@ def update_null_annotation(annotation: pd.DataFrame, annotation_data_home: str) 
     if null_annotation.empty:
         logger.info("Nothing to update in null annotation file.")
         return False
-    else:   
+    else:
         logger.debug(f"Null annotation: {null_annotation}")
 
-    null_annotation_file = join(annotation_data_home, "AnnotationNull.xlsx")
+    null_annotation_file = join(annotation_data_home, "AnnotationNull.parquet")
     if exists(null_annotation_file):
-        null_annotation_history = pd.read_excel(null_annotation_file)
+        null_annotation_history = pd.read_parquet(null_annotation_file)
         null_annotation = pd.concat(
             [null_annotation_history, null_annotation], ignore_index=True
         )
-        null_annotation = null_annotation.drop_duplicates(subset=["ID"])
+        null_annotation = null_annotation.drop_duplicates(subset=["ID"], keep="last")
 
     try:
         null_annotation.to_excel(null_annotation_file, index=False)
         logger.info(
             f"Null annotation file updated successfully: {null_annotation_file}."
         )
+        if cloud_annotation_post_folder:
+            if exists(cloud_annotation_post_folder):
+                cloud_null_annotation_file = join(
+                    cloud_annotation_post_folder, "AnnotationNull.parquet"
+                )
+                null_annotation.to_parquet(cloud_null_annotation_file, index=False)
+                logger.info(
+                    f"Null annotation file saved successfully: {cloud_null_annotation_file}."
+                )
         return True
     except Exception as e:
         logger.error(f"Error updating null annotation file: {null_annotation_file}")

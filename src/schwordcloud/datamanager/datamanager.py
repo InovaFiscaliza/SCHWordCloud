@@ -213,7 +213,7 @@ class DataManager:
             # Save the new annotation to the cloud folder
             save_cloud_annotation(annotation, self.cloud_annotation_post_folder)
             # Update the new null annotation to the local folder
-            update_null_annotation(annotation, self.annotation_data_home)
+            update_null_annotation(annotation, self.annotation_data_home, self.cloud_annotation_post_folder)
             # Clear the cached annotation
             self._cached_annotation = []
         except Exception as e:
