@@ -206,7 +206,7 @@ def _get_api_credentiails(config_file: str = None) -> dict:
     if not exists(credentials_file):
         logger.error(f"Credentials file not found: {credentials_file}")
         raise FileNotFoundError(f"Credentials file not found: {credentials_file}")
-    
+
     logger.info(f"Credentials file found: {credentials_file}")
     with open(credentials_file, "rb") as f:
         credentials = tomllib.load(f)
@@ -254,6 +254,9 @@ def load_config_file(config_file: str = None) -> dict:
     # load configuration
     data_home = config.get("data_home", None)
 
+    # load search parameters
+    search_params = config.get("search_params", None)
+
     # download NLTK data if not available
     nltk.download("stopwords", quiet=True)
 
@@ -261,4 +264,5 @@ def load_config_file(config_file: str = None) -> dict:
         "local_data_home": _get_local_data_home(data_home),
         "cloud_data_home": _get_cloud_data_home(config_file),
         "api_credentials": _get_api_credentiails(config_file),
+        "search_params": search_params,
     }

@@ -6,3 +6,8 @@ cloud_annotation_post_folder = "D:\\Users\\maxwelfreitas\\ANATEL\\InovaFiscaliza
 
 [credentials]
 credentials_file = "D:\\Users\\maxwelfreitas\\OneDrive - ANATEL\\credentials.toml"
+
+[search_params]
+category = 2
+grace_period = 120
+shuffle = true

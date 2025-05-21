@@ -20,9 +20,7 @@ class SCHWordCloud:
     def __init__(self, config_file: str = None):
         self.config = load_config_file(config_file)
         self.dm = DataManager(self.config)
-        self.gs = GoogleSearch(
-            self.config["api_credentials"]["google_search"]
-        )
+        self.gs = GoogleSearch(self.config["api_credentials"]["google_search"])
 
     def _generate_wordcloud(self, search_term: str):
         """
@@ -34,7 +32,7 @@ class SCHWordCloud:
                 result_status_code = result["status_code"]
                 assert result_status_code == 200
                 # add result and format annotation
-                if result['wordcloud']['cloudOfWords'] == '':
+                if result["wordcloud"]["cloudOfWords"] == "":
                     logger.info(f"Empty wordcloud for '{search_term}'")
                 else:
                     logger.info(f"Wordcloud sucessfully generated for '{search_term}'")

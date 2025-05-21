@@ -57,7 +57,17 @@ class DataManager:
             self.cloud_annotation_get_folder, self.annotation_data_home
         )
         self.uuid_history = get_uuid_history(self.annotation)
-        self.items_to_search = self.get_items_to_search()
+
+        if search_params := config.get("search_params", None):
+            self.items_to_search = self.get_items_to_search(
+                category=search_params["category"],
+                grace_period=search_params["grace_period"],
+                shuffle=search_params["shuffle"],
+            )
+        else:
+            self.items_to_search = self.get_items_to_search()
+        logger.debug(f"Search params: {search_params}")
+        logger.info(f"Loaded {len(self.items_to_search)} items to search")
 
         self._cached_search_results = []
         self._cached_annotation = []
@@ -213,7 +223,9 @@ class DataManager:
             # Save the new annotation to the cloud folder
             save_cloud_annotation(annotation, self.cloud_annotation_post_folder)
             # Update the new null annotation to the local folder
-            update_null_annotation(annotation, self.annotation_data_home, self.cloud_annotation_post_folder)
+            update_null_annotation(
+                annotation, self.annotation_data_home, self.cloud_annotation_post_folder
+            )
             # Clear the cached annotation
             self._cached_annotation = []
         except Exception as e:
