@@ -1,6 +1,6 @@
 # SCHWordCloud
 
-SCHWordCloud é uma ferramente que cria nuvens de palavras baseadas em resultados de pesquisas obtidas no Google relacionadas a dados obtidos no SCH (Sistema de Certificação e Homologação), o sistema de certificação de produtos da Anatel.
+SCHWordCloud é uma ferramenta que cria nuvens de palavras baseadas em resultados de pesquisas obtidas no Google relacionadas a dados obtidos no SCH (Sistema de Certificação e Homologação), o sistema de certificação de produtos da Anatel.
 
 ## Visão geral
 
