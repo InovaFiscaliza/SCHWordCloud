@@ -6,7 +6,7 @@ SCHWordCloud é uma ferramenta que cria nuvens de palavras baseadas em resultado
 
 Este projeto busca dados de certificação de produtos, realiza buscas na web usando as APIs do Google e do Bing e gera nuvens de palavras com base nos resultados da busca. A ferramenta também gerencia anotações e mantém um histórico dos resultados da busca.
 
-## Features
+## Caracteríticas de funcionamento
 
 - Baixa e processa o banco de dados SCH da ANATEL
 - Realiza buscas na web usando a API de Busca do Google
@@ -26,9 +26,6 @@ cd SCHWordCloud
 pip install -e .
 ```
 
-## Configuração
-
-A aplicação requer um arquivo TOML
 
 ## Usage
 
@@ -42,34 +39,41 @@ Options:
 - `-C, --config_file`: Path to the configuration file. If not provided, the default config will be used.
 - `-V, --verbose`: Increase output verbosity.
 
-### Configuration
+### Configuração
 
 O aplicativo requer um arquivo de configuração no formato TOML com as seguintes seções:
 
-1. **Repositório central de arquivos**
-   ```toml
-   [cloud]
-   cloud_annotation_get_folder = "path/to/cloud/annotation/get/folder"
-   cloud_annotation_post_folder = "path/to/cloud/annotation/post/folder"
-   ```
+1. **Repositório local de arquivos**
+```toml
+data_home = "D:\\Users\\maxwelfreitas\\OneDrive - ANATEL\\AppData\\schwordcloud\\datasets"
+```
 
-2. **Credenciais de API**
-   ```toml
-   [credentials]
-   credentials_file = "path/to/credentials/file"
-   ```
+2. **Repositório central de arquivos**
+```toml
+[cloud]
+cloud_annotation_get_folder = "path/to/cloud/annotation/get/folder"
+cloud_annotation_post_folder = "path/to/cloud/annotation/post/folder"
+```
 
-   O arquivos de credenciais deve contes as chaves de API e demais configurações requeridas pelo mecanismo de busca do Google:
-   ```toml
-   [api_credentials.google_search]
-   api_key = "your-google-api-key"
-   engine_id = "your-google-engine-id"
+3. **Credenciais de API**
+```toml
+[credentials]
+credentials_file = "path/to/credentials/file"
+```
 
-   ```
+   O arquivos de credenciais (```credentials.toml```) deve contes as chaves de API e demais configurações requeridas pelos mecanismos de busca:
+```toml
+[google_search]
+google_search_api_key = "google/search/api/key"
+google_search_engine_id = "google/search/engine/id"
+google_search_endpoint = "https://www.googleapis.com/customsearch/v1"
+```
+#### Observações
+1. A versão atual do aplicativo realiza buscas apenas no Google
 
-## Data Structure
+## Estrutura de dados
 
-The application creates the following directory structure:
+O aplicativo cria a seguinte estrutura de diretório:
 
 ```
 schwordcloud/                           # A pasta principal para o data_home do schwordcloud
@@ -114,6 +118,6 @@ schwordcloud/                           # A pasta principal para o data_home do 
 
 O aplicativo registra informações em um arquivo (`schwordcloud.log`) e no console quando o modo detalhado está ativado.
 
-## Author
+## Autor
 
 Maxwel de Souza Freitas
