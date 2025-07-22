@@ -41,7 +41,7 @@ def run_schwordcloud():
     # Configure the root logger
     logging.basicConfig(
         level=log_level,
-        format="%(asctime)s|%(levelname)s|%(name)s|%(message)s",
+        format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
         datefmt=LOG_TS_FORMAT,
         handlers=log_handlers,
     )
@@ -49,7 +49,7 @@ def run_schwordcloud():
     logger.info("SCHWordCloud started.")
     logger.debug(f"Configuration file: {args.config_file}")
 
-    schwc = SCHWordCloud(config_file=args.config_file.strip())
+    schwc = SCHWordCloud(config_file=args.config_file)
     schwc.generate_wordcloud()
 
     logger.info("SCHWordCloud finished.")

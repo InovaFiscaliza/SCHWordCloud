@@ -18,6 +18,10 @@ class SCHWordCloud:
     """
 
     def __init__(self, config_file: str = None):
+
+        if isinstance(config_file, str):
+            config_file = config_file.strip()
+            
         self.config = load_config_file(config_file)
         self.dm = DataManager(self.config)
         self.gs = GoogleSearch(self.config["api_credentials"]["google_search"])
