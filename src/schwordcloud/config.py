@@ -61,7 +61,8 @@ def _get_local_data_home(data_home=None) -> dict:
     )
     if data_home is None:
         data_home = environ.get("SCH_DATAHOME", default_data_home)
-        makedirs(data_home, exist_ok=True)
+    
+    makedirs(data_home, exist_ok=True)
 
     if not exists(data_home):
         logger.error(f"Data home not found: {data_home}")
@@ -196,9 +197,8 @@ def _get_api_credentiails(config_file: str = None) -> dict:
     with open(config_file, "rb") as f:
         config = tomllib.load(f)
 
-    if config_credentials := config.get("credentials", None):
-        credentials_file = config_credentials.get("credentials_file", None)
-
+    credentials_file = config.get("credentials_file", None)
+    
     if credentials_file is None:
         credentials_file = join("~", "credentials.toml")
     credentials_file = expanduser(credentials_file)
@@ -209,7 +209,12 @@ def _get_api_credentiails(config_file: str = None) -> dict:
 
     logger.info(f"Credentials file found: {credentials_file}")
     with open(credentials_file, "rb") as f:
-        credentials = tomllib.load(f)
+        _credentials = tomllib.load(f)
+
+    credentials = _credentials.get("credentials")
+    if not credentials:
+        logger.error(f"Credentials section not found in file: {credentials_file}")
+        raise KeyError(f"Credentials section not found in file: {credentials_file}")
 
     return credentials
 
@@ -245,7 +250,7 @@ def load_config_file(config_file: str = None) -> dict:
     if config_file is None:
         config_file = join(dirname(__file__), "config.toml")
 
-    if not exists(config_file):
+    if not exists(config_file.strip()):
         logger.error(f"Config file not found: {config_file}")
         raise FileNotFoundError(f"Config file not found: {config_file}")
     with open(config_file, "rb") as f:

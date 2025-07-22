@@ -56,7 +56,7 @@ class SCHWordCloud:
         Run the SCHWordCloud.
         """
         logger.info("Starting generating wordclouds...")
-        for item in self.dm.items_to_search:
+        for item in self.dm.items_to_search[:5]:
             if self._generate_wordcloud(item) != 200:
                 break
         logger.info("Stoped generating wordclouds...")

@@ -233,14 +233,14 @@ def fetch_sch_database(
                 "Re-downloading the file (forced)..."
             )
             _download_sch_database(sch_data_home, n_retries=n_retries, delay=delay)
-            logger.info("Download complete.")
+            logger.info("SCH Database download complete.")
     elif download_if_missing:
         # If the file does not exist and download_if_missing is True, download it
         logger.info(
             f"File {local_sch_file_path} does not exist. Downloading the file..."
         )
         _download_sch_database(sch_data_home, n_retries=n_retries, delay=delay)
-        logger.info("Download complete.")
+        logger.info("SCH Database download complete.")
     else:
         # If the file does not exist and download_if_missing is False, raise an error
         logger.error(

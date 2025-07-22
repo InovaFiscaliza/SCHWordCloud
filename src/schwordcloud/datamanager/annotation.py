@@ -55,6 +55,9 @@ def fetch_annotation(
         If there are issues copying or accessing annotation files.
 
     """
+
+    logger.info("Fetching annotation file started.")
+
     cloud_annotation_file = join(cloud_annotation_folder, "Annotation.xlsx")
     cloud_null_annotation_file = join(cloud_annotation_folder, "AnnotationNull.parquet")
 
@@ -67,6 +70,7 @@ def fetch_annotation(
             f"Annotation file not found: {cloud_null_annotation_file}"
         )
 
+    logger.debug("Coping annotation file from cloud to local storage.")
     copyfile(cloud_annotation_file, local_annotation_file)
     if not exists(local_annotation_file):
         logger.error(f"Error fetching annotation file: {cloud_annotation_file}")
@@ -75,6 +79,7 @@ def fetch_annotation(
     annotation = pd.read_excel(local_annotation_file)
 
     if exists(cloud_null_annotation_file):
+        logger.debug("Coping null annotation file from cloud to local storage.")
         copyfile(cloud_null_annotation_file, local_null_annotation_file)
         if not exists(local_null_annotation_file):
             logger.error(
@@ -91,6 +96,8 @@ def fetch_annotation(
     annotation = annotation[annotation["Atributo"] == "WordCloud"].reset_index(
         drop=True
     )
+
+    logger.info("Fetching annotation file completed.")
 
     return annotation
 
@@ -179,7 +186,7 @@ def update_null_annotation(
         null_annotation = null_annotation.drop_duplicates(subset=["ID"], keep="last")
 
     try:
-        null_annotation.to_excel(null_annotation_file, index=False)
+        null_annotation.to_parquet(null_annotation_file, index=False)
         logger.info(
             f"Null annotation file updated successfully: {null_annotation_file}."
         )
