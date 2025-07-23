@@ -6,68 +6,80 @@ SCHWordCloud é uma ferramenta que cria nuvens de palavras baseadas em resultado
 
 Este projeto busca dados de certificação de produtos, realiza buscas na web usando as APIs do Google e do Bing e gera nuvens de palavras com base nos resultados da busca. A ferramenta também gerencia anotações e mantém um histórico dos resultados da busca.
 
-## Caracteríticas de funcionamento
+## Como funciona
 
-- Baixa e processa o banco de dados SCH da ANATEL
-- Realiza buscas na web usando a API de Busca do Google
-- Gera nuvens de palavras a partir dos resultados da busca
+1. O aplicativo baixa o banco de dados SCH mais recente da Anatel
+2. Extrai informações de certificação do produto
+3. Para cada número de certificação, realiza buscas na web
+4. Os resultados da busca são processados ​​para gerar nuvens de palavras
+5. Os resultados são salvos como anotações com metadados
+6. As anotações são consolidadas por meio de pastas na nuvem
+
+### Outras características do funcionamento:
+
 - Mantém o histórico de anotações dos resultados da busca
-- Suporta compartilhamento de anotações baseado em nuvem
 - Configurável por meio de arquivos de configuração TOML
-- Sistema de registro abrangente
+
+### Observações
+- O aplicativo somente baixa o banco de dados mais recente da Anatel se o local não foi atualizado há mais de 180 dias. Para forçar a atualização, basta excluir o arquivo local.
+- As pesquisas são feitas pelo número de certificação, por padrão são considerados os números ainda não pesquisados de produtos homologados há mais de 180, valor que pode ser ajustado através da configuração do período de graça (```grace_period```) do arquivo de configuração.
 
 ## Instalação
 
-Clone o repositório disponível no GitHub:
-
-```bash
-git clone https://github.com/maxwelfreitas/SCHWordCloud.git
-cd SCHWordCloud
-pip install -e .
-```
-
-
-## Usage
-
-### Command Line Interface
-
-```bash
-schwordcloud [-C CONFIG_FILE] [-V]
-```
-
-Options:
-- `-C, --config_file`: Path to the configuration file. If not provided, the default config will be used.
-- `-V, --verbose`: Increase output verbosity.
-
-### Configuração
+### Crie o arquivo de configuração
 
 O aplicativo requer um arquivo de configuração no formato TOML com as seguintes seções:
 
-1. **Repositório local de arquivos**
 ```toml
-data_home = "D:\\Users\\maxwelfreitas\\OneDrive - ANATEL\\AppData\\schwordcloud\\datasets"
-```
+# Repositório local de arquivos
+data_home = "path/to/local/datasets/folder"
 
-2. **Repositório central de arquivos**
-```toml
+# Repositório central de arquivos
 [cloud]
 cloud_annotation_get_folder = "path/to/cloud/annotation/get/folder"
 cloud_annotation_post_folder = "path/to/cloud/annotation/post/folder"
-```
 
-3. **Credenciais de API**
-```toml
+# Credenciais de API
 [credentials]
 credentials_file = "path/to/credentials/file"
+
+# Configurações opcionais de busca
+[search_params]
+category = 2         # categoria de produtos para buscar
+grace_period = 120   # período de graça
+shuffle = true       # ordena aleatoriamente os números de homologação antes da busca
 ```
 
-   O arquivos de credenciais (```credentials.toml```) deve contes as chaves de API e demais configurações requeridas pelos mecanismos de busca:
+### Crie o arquivo de credenciais
+
+O arquivos de credenciais deve conter as chaves de API e demais configurações requeridas pelos mecanismos de busca:
+
 ```toml
 [google_search]
 google_search_api_key = "google/search/api/key"
 google_search_engine_id = "google/search/engine/id"
 google_search_endpoint = "https://www.googleapis.com/customsearch/v1"
 ```
+
+### Clone o repositório disponível no GitHub e crie o ambiente virtual:
+
+```bash
+git clone https://github.com/maxwelfreitas/SCHWordCloud.git
+cd SCHWordCloud
+uv sync
+```
+
+### Execute o aplicativo
+
+```bash
+uv run schwordcloud [-C CONFIG_FILE] [-V]
+```
+
+Argumentos:
+- `-C, --config_file`: Caminho para o arquivo de configuração. Se não for fornecido, a configuração padrão será usada.
+- `-V, --verbose`: Se ativado, aumenta a quantidade de informações exibida no console.
+
+
 #### Observações
 1. A versão atual do aplicativo realiza buscas apenas no Google
 
@@ -80,25 +92,13 @@ schwordcloud/                           # A pasta principal para o data_home do 
 └── datasets/                           # A pasta home dos dados
     ├── annotation/                     # Contém os arquivos de anotação
     |   ├── Annotation.xlsx             # Uma cópia do arquivo de anotação da nuvem
-    |   └── AnnotationNull.xlsx         # Uma cópia do arquivo de anotação nula
+    |   └── AnnotationNull.parquet      # Uma cópia do arquivo de anotação nula
     ├── sch/                            # Contém o arquivo do banco de dados SCH
     |   └── produtos_certificados.zip   # Arquivo do banco de dados SCH obtido da ANATEL
     └── search_results/                 # Contém os dados dos resultados da pesquisa
         └── search_history.parquet      # Histórico de pesquisa no formato Parquet
 ```
 
-## Como Funciona
-
-1. O aplicativo baixa o banco de dados SCH mais recente da Anatel
-2. Extrai informações de certificação do produto
-3. Para cada número de certificação, realiza buscas na web
-4. Os resultados da busca são processados ​​para gerar nuvens de palavras
-5. Os resultados são salvos como anotações com metadados
-6. As anotações podem ser compartilhadas por meio de pastas na nuvem
-
-### Observações
-1. O aplicativo somente baixa o banco de dados mais recente da Anatel se o local não foi atualizado há mais de 180 dias. Para forçar a atualização, basta excluir o arquivo local.
-2. As pesquisas são feitas pelo número de certificação, são considerados os números ainda não pesquisados de produtos homologados há mais de 180, valor que pode ser ajustado através do arquivo de configuração.
 
 ## Desenvolvimento
 
