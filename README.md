@@ -34,14 +34,13 @@ O aplicativo requer um arquivo de configuração no formato TOML com as seguinte
 # Repositório local de arquivos
 data_home = "path/to/local/datasets/folder"
 
+# Aquivo com credenciais de API
+credentials_file = "path/to/credentials/file"
+
 # Repositório central de arquivos
 [cloud]
 cloud_annotation_get_folder = "path/to/cloud/annotation/get/folder"
 cloud_annotation_post_folder = "path/to/cloud/annotation/post/folder"
-
-# Credenciais de API
-[credentials]
-credentials_file = "path/to/credentials/file"
 
 # Configurações opcionais de busca
 [search_params]
@@ -55,16 +54,19 @@ shuffle = true       # ordena aleatoriamente os números de homologação antes 
 O arquivos de credenciais deve conter as chaves de API e demais configurações requeridas pelos mecanismos de busca:
 
 ```toml
-[google_search]
+[credentials]
+[credentials.google_search]
 google_search_api_key = "google/search/api/key"
 google_search_engine_id = "google/search/engine/id"
 google_search_endpoint = "https://www.googleapis.com/customsearch/v1"
 ```
+#### Observações
+1. A versão atual do aplicativo realiza buscas apenas no Google
 
 ### Clone o repositório disponível no GitHub e crie o ambiente virtual:
 
 ```bash
-git clone https://github.com/maxwelfreitas/SCHWordCloud.git
+git clone https://github.com/InovaFiscaliza/SCHWordCloud.git
 cd SCHWordCloud
 uv sync
 ```
@@ -79,9 +81,6 @@ Argumentos:
 - `-C, --config_file`: Caminho para o arquivo de configuração. Se não for fornecido, a configuração padrão será usada.
 - `-V, --verbose`: Se ativado, aumenta a quantidade de informações exibida no console.
 
-
-#### Observações
-1. A versão atual do aplicativo realiza buscas apenas no Google
 
 ## Estrutura de dados
 
@@ -105,7 +104,7 @@ schwordcloud/                           # A pasta principal para o data_home do 
 ### Estrutura do Projeto
 
 ```
-   src/schwordcloud/      # Pacote principal
+src/schwordcloud/         # Pacote principal
 ├─── datamanager/         # Módulos de gerenciamento de dados
 ├─── websearch/           # Integrações com a API de busca na web
 ├─── config.py            # Manipulação de configuração
