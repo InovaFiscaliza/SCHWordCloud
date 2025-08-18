@@ -17,6 +17,13 @@ def run_schwordcloud():
         help="Path to the configuration file. If not provided, the default config will be used.",
     )
     parser.add_argument(
+        "-L",
+        "--log_file",
+        type=str,
+        default="schwordcloud.log",
+        help="Path to the log file. If not provided, the default log file will be used.",
+    )
+    parser.add_argument(
         "-V", "--verbose", action="store_true", help="Increase output verbosity."
     )
     args = parser.parse_args()
@@ -28,7 +35,8 @@ def run_schwordcloud():
     log_handlers = []
 
     # Always log to file
-    file_handler = logging.FileHandler("schwordcloud.log")
+    log_file = args.log_file.strip()
+    file_handler = logging.FileHandler(log_file)
     file_handler.setLevel(logging.INFO)
     log_handlers.append(file_handler)
 
